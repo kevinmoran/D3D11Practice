@@ -1,0 +1,24 @@
+
+// MSAA with newer FlipModel
+// Good answers from Chuck Walbourn explaining how this should work:
+// https://stackoverflow.com/a/56287093
+// https://stackoverflow.com/a/40309469
+//
+// "A QUICK OVERVIEW OF MSAA" by MJP
+// https://mynameismjp.wordpress.com/2012/10/24/msaa-overview/
+
+// TODO: Query what MSAA settings the graphics device supports:
+// https://docs.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-id3d11device-checkmultisamplequalitylevels
+
+// BLOCK TEXTURE COMPRESSION
+//
+// Tools to compress textures/generate mipmaps:
+// https://github.com/Microsoft/DirectXTex/wiki/Texconv
+// https://github.com/castano/nvidia-texture-tools
+//
+// Documentation of DDS file format:
+// https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide
+//
+// Calculating size of a texture's compressed mip-levels:
+// https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-file-layout-for-textures
+// 
