@@ -254,7 +254,7 @@ bool d3d11CreateMesh(ID3D11Device1* device, const char* fileName, Mesh* mesh)
     return true;
 }
 
-bool d3d11CreateTexture(ID3D11Device1* device, const char* fileName, Texture* texture)
+bool d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, const char* fileName, Texture* texture)
 {
     // Load Image
     int texForceNumChannels = 4;
@@ -267,22 +267,28 @@ bool d3d11CreateTexture(ID3D11Device1* device, const char* fileName, Texture* te
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width              = texture->width;
         textureDesc.Height             = texture->height;
-        textureDesc.MipLevels          = 1;
+        textureDesc.MipLevels          = 0;
         textureDesc.ArraySize          = 1;
-        textureDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
+        textureDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
         textureDesc.SampleDesc.Count   = 1;
-        textureDesc.Usage              = D3D11_USAGE_IMMUTABLE;
-        textureDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
-
-        D3D11_SUBRESOURCE_DATA textureSubresourceData = {};
-        textureSubresourceData.pSysMem = textureBytes;
-        textureSubresourceData.SysMemPitch = texture->bytesPerRow;
+        textureDesc.Usage              = D3D11_USAGE_DEFAULT;
+        textureDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        textureDesc.MiscFlags          = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
         ID3D11Texture2D* d3dTexture;
-        device->CreateTexture2D(&textureDesc, &textureSubresourceData, &d3dTexture);
+        device->CreateTexture2D(&textureDesc, NULL, &d3dTexture);
 
-        device->CreateShaderResourceView(d3dTexture, nullptr, &texture->d3dShaderResourceView);
+        deviceContext->UpdateSubresource(d3dTexture, 0, NULL, textureBytes, texture->bytesPerRow, 0);
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Format = textureDesc.Format;
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = 0xffffffff;
+
+        device->CreateShaderResourceView(d3dTexture, &srvDesc, &texture->d3dShaderResourceView);
         d3dTexture->Release();
+
+        deviceContext->GenerateMips(texture->d3dShaderResourceView);
     }
 
     free(textureBytes);

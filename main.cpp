@@ -162,17 +162,18 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     d3d11CreateMesh(d3d11Data.device, "cube.obj", &cubeMesh);
 
     Texture cubeTexture = {};
-    d3d11CreateTexture(d3d11Data.device, "test.png", &cubeTexture);
+    d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "test.png", &cubeTexture);
 
     // Create Sampler State
     ID3D11SamplerState* samplerState;
     {
         D3D11_SAMPLER_DESC samplerDesc = {};
-        samplerDesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_POINT;
+        samplerDesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
         samplerDesc.AddressU       = D3D11_TEXTURE_ADDRESS_CLAMP;
         samplerDesc.AddressV       = D3D11_TEXTURE_ADDRESS_CLAMP;
         samplerDesc.AddressW       = D3D11_TEXTURE_ADDRESS_CLAMP;
         samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        samplerDesc.MaxLOD         = D3D11_FLOAT32_MAX;
 
         d3d11Data.device->CreateSamplerState(&samplerDesc, &samplerState);
     }

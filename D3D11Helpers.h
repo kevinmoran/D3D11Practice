@@ -41,7 +41,7 @@ struct Texture
     int bytesPerRow;
 };
 
-bool d3d11CreateTexture(ID3D11Device1* device, const char* fileName, Texture* texture);
+bool d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, const char* fileName, Texture* texture);
 
 bool d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize, ID3D11Buffer** constantBuffer);
 
