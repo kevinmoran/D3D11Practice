@@ -12,23 +12,9 @@
 #include "stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
 
-// Input
-enum GameAction {
-    GameActionMoveCamFwd,
-    GameActionMoveCamBack,
-    GameActionMoveCamLeft,
-    GameActionMoveCamRight,
-    GameActionTurnCamLeft,
-    GameActionTurnCamRight,
-    GameActionLookUp,
-    GameActionLookDown,
-    GameActionRaiseCam,
-    GameActionLowerCam,
-    GameActionCount
-};
-
 #include "D3D11Helpers.h"
 #include "3DMaths.h"
+#include "Input.h"
 #include "Camera.h"
 
 #define WINDOW_TITLE L"D3D11"
@@ -208,9 +194,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     }
 
     // Camera
-    Camera camera = {};
-    camera.pos = {0, 0, 2};
-    camera.fwd = {0, 0, -1};
+    Camera camera = cameraInit({3, 2, 3},  {0, 0, 0});
 
     mat4 perspectiveMat = {};
     wndProcData.windowDidResize = true; // To force initial perspectiveMat calculation
