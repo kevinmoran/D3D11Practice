@@ -45,4 +45,4 @@ bool d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceConte
 
 bool d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize, ID3D11Buffer** constantBuffer);
 
-void d3d11UpdateConstantBuffer(ID3D11DeviceContext1* deviceContext, ID3D11Buffer* constantBuffer, void* data, size_t dataSize);
+void d3d11OverwriteConstantBuffer(ID3D11DeviceContext1* deviceContext, ID3D11Buffer* constantBuffer, void* data, size_t dataSize);

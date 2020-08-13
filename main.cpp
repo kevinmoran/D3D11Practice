@@ -347,14 +347,14 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
         { // Draw player
             Constants constants = { playerModelMat * viewMat * perspectiveMat };
-            d3d11UpdateConstantBuffer(d3d11Data.deviceContext, constantBuffer, &constants, sizeof(Constants));
+            d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, constantBuffer, &constants, sizeof(Constants));
 
             d3d11Data.deviceContext->DrawIndexed(cubeMesh.numIndices, 0, 0);
         }
         
         for(int i=0; i<NUM_CUBES; ++i) {
             Constants constants = { cubeModelMats[i] * viewMat * perspectiveMat };
-            d3d11UpdateConstantBuffer(d3d11Data.deviceContext, constantBuffer, &constants, sizeof(Constants));
+            d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, constantBuffer, &constants, sizeof(Constants));
 
             d3d11Data.deviceContext->DrawIndexed(cubeMesh.numIndices, 0, 0);
         }

@@ -309,7 +309,7 @@ bool d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize, ID3D11B
     return true;
 }
 
-void d3d11UpdateConstantBuffer(ID3D11DeviceContext1* deviceContext, ID3D11Buffer* constantBuffer, void* data, size_t dataSize)
+void d3d11OverwriteConstantBuffer(ID3D11DeviceContext1* deviceContext, ID3D11Buffer* constantBuffer, void* data, size_t dataSize)
 {
     D3D11_MAPPED_SUBRESOURCE mappedSubresource;
     deviceContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
