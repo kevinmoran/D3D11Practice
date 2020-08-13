@@ -340,6 +340,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     inputLayout->Release();
     vertexShader->Release();
     d3d11Data.depthStencilView->Release();
+    d3d11Data.msaaRenderTarget->Release();
+    d3d11Data.msaaRenderTargetView->Release();
+    d3d11Data.mainRenderTarget->Release();
     d3d11Data.mainRenderTargetView->Release();
     d3d11Data.swapChain->Release();
     d3d11Data.deviceContext->Release();

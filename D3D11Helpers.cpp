@@ -283,7 +283,7 @@ bool d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceConte
         D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
         srvDesc.Format = textureDesc.Format;
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = 0xffffffff;
+        srvDesc.Texture2D.MipLevels = (UINT)-1;
 
         device->CreateShaderResourceView(d3dTexture, &srvDesc, &texture->d3dShaderResourceView);
         d3dTexture->Release();

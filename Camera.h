@@ -9,6 +9,5 @@ struct Camera {
     float yaw;
 };
 
-mat4 cameraUpdate(Camera* camera, bool keys[], float dt);
-
 Camera cameraInit(vec3 pos, vec3 targetPos);
+mat4 cameraUpdate(Camera* camera, bool keys[], float dt);

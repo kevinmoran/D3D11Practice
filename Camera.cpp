@@ -2,6 +2,18 @@
 
 #include "Input.h"
 
+Camera cameraInit(vec3 pos, vec3 targetPos)
+{
+    Camera cam;
+    cam.pos = pos;
+    cam.fwd = normalise(targetPos - pos);
+
+    cam.pitch = asinf(cam.fwd.y);
+    cam.yaw = atan2f(-cam.fwd.x, -cam.fwd.z);
+
+    return cam;
+}
+
 const float CAM_MOVE_SPEED = 5.f; // in metres per second
 const float CAM_TURN_SPEED = PI32; // in radians per second
 
@@ -51,30 +63,3 @@ mat4 cameraUpdate(Camera* camera, bool keys[], float dt)
 
     return viewMat;
 }
-
-Camera cameraInit(vec3 pos, vec3 targetPos)
-{
-    Camera cam;
-    cam.pos = pos;
-    cam.fwd = normalise(targetPos - pos);
-
-    cam.pitch = asinf(cam.fwd.y);
-    cam.yaw = atan2f(-cam.fwd.x, -cam.fwd.z);
-
-    return cam;
-}
-
-//     return {
-//         cosYaw, 0, sinYaw, 0,
-//         0, 1, 0, 0,
-//         -sinYaw, 0, cosYaw, 0,
-//         0, 0, 0, 1
-//     };
-
-//     return {
-//         1, 0, 0, 0,
-//         0, cosPitch, -sinPitch, 0,
-//         0, sinPitch, cosPitch, 0,
-//         0, 0, 0, 1
-//     };
-// }
