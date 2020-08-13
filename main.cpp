@@ -194,10 +194,16 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     }
 
     // Camera
-    Camera camera = cameraInit({3, 2, 3},  {0, 0, 0});
+    Camera camera = cameraInit({0, 1, 3},  {0, 0, 0});
+
+    bool freeCam = false;
 
     mat4 perspectiveMat = {};
     wndProcData.windowDidResize = true; // To force initial perspectiveMat calculation
+
+    // Player
+    vec3 playerPos = {0,0,0};
+    vec3 playerFwd = {0,0,-1};    
 
     LONGLONG startPerfCount = 0;
     LONGLONG perfCounterFrequency = 0;
@@ -266,20 +272,42 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             wndProcData.windowDidResize = false;
         }
 
-        mat4 viewMat = cameraUpdate(&camera, wndProcData.keyIsDown, dt);
+        mat4 playerModelMat;
+        { // Update player position
+            vec3 playerRight = cross(playerFwd, {0, 1, 0});
+
+            const float PLAYER_MOVE_SPEED = 5.f;
+            const float PLAYER_MOVE_AMOUNT = PLAYER_MOVE_SPEED * dt;
+            if(wndProcData.keyIsDown[GameActionMoveCamFwd])
+                playerPos += playerFwd * PLAYER_MOVE_AMOUNT;
+            if(wndProcData.keyIsDown[GameActionMoveCamBack])
+                playerPos -= playerFwd * PLAYER_MOVE_AMOUNT;
+            if(wndProcData.keyIsDown[GameActionMoveCamLeft])
+                playerPos -= playerRight * PLAYER_MOVE_AMOUNT;
+            if(wndProcData.keyIsDown[GameActionMoveCamRight])
+                playerPos += playerRight * PLAYER_MOVE_AMOUNT;
+
+            playerModelMat = scaleMat({1,1,1}) * translationMat(playerPos);
+        }
+
+        mat4 viewMat;
+        if(freeCam)
+            viewMat = cameraUpdateFreeCam(&camera, wndProcData.keyIsDown, dt);
+        else 
+            viewMat = cameraUpdateFollowPlayer(&camera, playerPos);
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
 
         // Spin the cube
         const int NUM_CUBES = 5;
         vec3 cubePositions[NUM_CUBES] = {
-            {0,0,0},
+            {4,0,-6},
             {-1,2,-5},
             {3,1,-8},
             {-0.5,0.2, 6},
             {0,-1,0},
         };
         vec3 cubeScales[NUM_CUBES] = {
-            {1,1,1},
+            {3,3,3},
             {1,2,5},
             {3,1,8},
             {5,0.2, 6},
@@ -316,6 +344,13 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
         d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &cubeMesh.vertexBuffer, &cubeMesh.stride, &cubeMesh.offset);
         d3d11Data.deviceContext->IASetIndexBuffer(cubeMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+        { // Draw player
+            Constants constants = { playerModelMat * viewMat * perspectiveMat };
+            d3d11UpdateConstantBuffer(d3d11Data.deviceContext, constantBuffer, &constants, sizeof(Constants));
+
+            d3d11Data.deviceContext->DrawIndexed(cubeMesh.numIndices, 0, 0);
+        }
         
         for(int i=0; i<NUM_CUBES; ++i) {
             Constants constants = { cubeModelMats[i] * viewMat * perspectiveMat };

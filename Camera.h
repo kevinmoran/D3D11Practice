@@ -10,4 +10,5 @@ struct Camera {
 };
 
 Camera cameraInit(vec3 pos, vec3 targetPos);
-mat4 cameraUpdate(Camera* camera, bool keys[], float dt);
+mat4 cameraUpdateFreeCam(Camera* camera, bool keys[], float dt);
+mat4 cameraUpdateFollowPlayer(Camera* camera, vec3 playerPos);

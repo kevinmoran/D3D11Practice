@@ -17,7 +17,7 @@ Camera cameraInit(vec3 pos, vec3 targetPos)
 const float CAM_MOVE_SPEED = 5.f; // in metres per second
 const float CAM_TURN_SPEED = PI32; // in radians per second
 
-mat4 cameraUpdate(Camera* camera, bool keys[], float dt)
+mat4 cameraUpdateFreeCam(Camera* camera, bool keys[], float dt)
 {
     vec3 camFwdXZ = normalise({camera->fwd.x, 0, camera->fwd.z});
     vec3 camRightXZ = cross(camFwdXZ, {0, 1, 0});
@@ -61,5 +61,12 @@ mat4 cameraUpdate(Camera* camera, bool keys[], float dt)
     mat4 viewMat = translationMat(-camera->pos) * rotateYMat(-camera->yaw) * rotateXMat(-camera->pitch);
     camera->fwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
 
+    return viewMat;
+}
+
+mat4 cameraUpdateFollowPlayer(Camera* camera, vec3 playerPos)
+{
+    *camera = cameraInit(playerPos + vec3{0,1,3}, playerPos);
+    mat4 viewMat = translationMat(-camera->pos) * rotateYMat(-camera->yaw) * rotateXMat(-camera->pitch);
     return viewMat;
 }
