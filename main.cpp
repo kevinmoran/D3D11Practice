@@ -77,7 +77,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return result;
 }
 
-HWND openWindow(LPCWSTR title)
+HWND openWindow(LPCWSTR title, int windowWidth, int windowHeight)
 {
     WNDCLASSEXW winClass = {};
     winClass.cbSize = sizeof(WNDCLASSEXW);
@@ -94,7 +94,7 @@ HWND openWindow(LPCWSTR title)
         return NULL;
     }
 
-    RECT initialRect = { 0, 0, 1024, 768 };
+    RECT initialRect = { 0, 0, windowWidth, windowHeight };
     AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
     LONG initialWidth = initialRect.right - initialRect.left;
     LONG initialHeight = initialRect.bottom - initialRect.top;
@@ -116,7 +116,10 @@ HWND openWindow(LPCWSTR title)
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
-    HWND hWindow = openWindow(WINDOW_TITLE);
+    int windowWidth = 1024;
+    int windowHeight = 768;
+    float windowAspectRatio = (float)windowWidth / windowHeight;
+    HWND hWindow = openWindow(WINDOW_TITLE, windowWidth, windowHeight);
     if(!hWindow) return GetLastError();
 
     WndProcData wndProcData = {};
@@ -244,18 +247,16 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             }
         }
 
-        int windowWidth, windowHeight;
-        float windowAspectRatio;
-        { // Get window dimensions
-            RECT clientRect;
-            GetClientRect(hWindow, &clientRect);
-            windowWidth = clientRect.right - clientRect.left;
-            windowHeight = clientRect.bottom - clientRect.top;
-            windowAspectRatio = (float)windowWidth / (float)windowHeight;
-        }
-
         if(wndProcData.windowDidResize)
         {
+            { // Get window dimensions
+                RECT clientRect;
+                GetClientRect(hWindow, &clientRect);
+                windowWidth = clientRect.right - clientRect.left;
+                windowHeight = clientRect.bottom - clientRect.top;
+                windowAspectRatio = (float)windowWidth / (float)windowHeight;
+            }
+
             d3d11Data.deviceContext->OMSetRenderTargets(0, 0, 0);
             d3d11Data.mainRenderTarget->Release();
             d3d11Data.mainRenderTargetView->Release();
