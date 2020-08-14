@@ -6,12 +6,12 @@
 #include <d3d11_1.h>
 
 #include <assert.h>
-#include <stdint.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
 
+#include "types.h"
 #include "D3D11Helpers.h"
 #include "3DMaths.h"
 #include "Input.h"
@@ -22,7 +22,7 @@
 // Struct to pass data from WndProc to main loop
 struct WndProcData {
     bool windowDidResize;
-    bool keyIsDown[GameActionCount];
+    KeyState keys[KEY_COUNT];
 };
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -34,30 +34,101 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         case WM_KEYDOWN:
         case WM_KEYUP:
+        case WM_SYSKEYDOWN:
+        case WM_SYSKEYUP:
         {
-            bool isDown = (msg == WM_KEYDOWN);
-            if(wparam == VK_ESCAPE)
-                DestroyWindow(hwnd);
-            else if(wparam == 'W')
-                wndProcData->keyIsDown[GameActionMoveCamFwd] = isDown;
-            else if(wparam == 'A')
-                wndProcData->keyIsDown[GameActionMoveCamLeft] = isDown;
-            else if(wparam == 'S')
-                wndProcData->keyIsDown[GameActionMoveCamBack] = isDown;
-            else if(wparam == 'D')
-                wndProcData->keyIsDown[GameActionMoveCamRight] = isDown;
-            else if(wparam == 'E')
-                wndProcData->keyIsDown[GameActionRaiseCam] = isDown;
-            else if(wparam == 'Q')
-                wndProcData->keyIsDown[GameActionLowerCam] = isDown;
-            else if(wparam == VK_UP)
-                wndProcData->keyIsDown[GameActionLookUp] = isDown;
+            bool isDown = ((lparam & (1 << 31)) == 0);
+            // A - Z
+            if(wparam >= 'A' && wparam <= 'Z')
+                wndProcData->keys[KEY_A + wparam - 'A'].isDown = isDown;
+            // 0 - 9
+            else if(wparam >= '0' && wparam <= '9')
+                wndProcData->keys[KEY_0 + wparam - '0'].isDown = isDown;
+            // Numpad 0 - 9
+            else if(wparam >= VK_NUMPAD0 && wparam <= VK_NUMPAD9)
+                wndProcData->keys[KEY_NUMPAD_0 + wparam - VK_NUMPAD0].isDown = isDown;
+            // F keys
+            else if(wparam >= VK_F1 && wparam <= VK_F12)
+                wndProcData->keys[KEY_F1 + wparam - VK_F1].isDown = isDown;
+    
+            else if(wparam == VK_BACK)
+                wndProcData->keys[KEY_BACKSPACE].isDown = isDown;
+            else if(wparam == VK_TAB)
+                wndProcData->keys[KEY_TAB].isDown = isDown;
+            else if(wparam == VK_RETURN)
+                wndProcData->keys[KEY_ENTER].isDown = isDown;
+            else if(wparam == VK_SHIFT)
+                wndProcData->keys[KEY_SHIFT].isDown = isDown;
+            else if(wparam == VK_CONTROL)
+                wndProcData->keys[KEY_CTRL].isDown = isDown;
+            else if(wparam == VK_MENU)
+                wndProcData->keys[KEY_ALT].isDown = isDown;
+            // The pause key doesn't work for the simple style of keyboard input,
+            // it seems to immediately send a WM_KEYUP message after the WM_KEYDOWN,
+            // even if you hold the key, so this flag will just get immediately
+            // reset before the game can see it.
+            // else if(wparam == VK_PAUSE)
+                // wndProcData->keys[KEY_PAUSE].isDown = isDown;
+            else if(wparam == VK_CAPITAL)
+                wndProcData->keys[KEY_CAPSLOCK].isDown = isDown;
+            else if(wparam == VK_ESCAPE)
+                wndProcData->keys[KEY_ESC].isDown = isDown;
+            else if(wparam == VK_SPACE)
+                wndProcData->keys[KEY_SPACE].isDown = isDown;
+            else if(wparam == VK_PRIOR)
+                wndProcData->keys[KEY_PGUP].isDown = isDown;
+            else if(wparam == VK_NEXT)
+                wndProcData->keys[KEY_PGDN].isDown = isDown;
+            else if(wparam == VK_HOME)
+                wndProcData->keys[KEY_HOME].isDown = isDown;
+            else if(wparam == VK_END)
+                wndProcData->keys[KEY_END].isDown = isDown;
             else if(wparam == VK_LEFT)
-                wndProcData->keyIsDown[GameActionTurnCamLeft] = isDown;
-            else if(wparam == VK_DOWN)
-                wndProcData->keyIsDown[GameActionLookDown] = isDown;
+                wndProcData->keys[KEY_LEFT].isDown = isDown;
+            else if(wparam == VK_UP)
+                wndProcData->keys[KEY_UP].isDown = isDown;
             else if(wparam == VK_RIGHT)
-                wndProcData->keyIsDown[GameActionTurnCamRight] = isDown;
+                wndProcData->keys[KEY_RIGHT].isDown = isDown;
+            else if(wparam == VK_DOWN)
+                wndProcData->keys[KEY_DOWN].isDown = isDown;
+            // The print screen key seems to only send a WM_KEYUP so this doesn't work. 
+            // else if(wparam == VK_SNAPSHOT)
+                // wndProcData->keys[KEY_PRINT_SCREEN].isDown = isDown;
+            else if(wparam == VK_INSERT)
+                wndProcData->keys[KEY_INSERT].isDown = isDown;
+            else if(wparam == VK_DELETE)
+                wndProcData->keys[KEY_DELETE].isDown = isDown;
+            else if(wparam == VK_ADD)
+                wndProcData->keys[KEY_NUMPAD_ADD].isDown = isDown;
+            else if(wparam == VK_SUBTRACT)
+                wndProcData->keys[KEY_NUMPAD_SUBTRACT].isDown = isDown;
+            else if(wparam == VK_DECIMAL)
+                wndProcData->keys[KEY_NUMPAD_DECIMAL].isDown = isDown;
+            else if(wparam == VK_DIVIDE)
+                wndProcData->keys[KEY_NUMPAD_DIVIDE].isDown = isDown;
+            else if(wparam == VK_OEM_1)
+                wndProcData->keys[KEY_SEMICOLON].isDown = isDown;
+            else if(wparam == VK_OEM_PLUS)
+                wndProcData->keys[KEY_PLUS].isDown = isDown;
+            else if(wparam == VK_OEM_COMMA)
+                wndProcData->keys[KEY_COMMA].isDown = isDown;
+            else if(wparam == VK_OEM_MINUS)
+                wndProcData->keys[KEY_MINUS].isDown = isDown;
+            else if(wparam == VK_OEM_PERIOD)
+                wndProcData->keys[KEY_PERIOD].isDown = isDown;
+            else if(wparam == VK_OEM_2)
+                wndProcData->keys[KEY_SLASH].isDown = isDown;
+            else if(wparam == VK_OEM_3)
+                wndProcData->keys[KEY_GRAVE_ACCENT].isDown = isDown;
+            else if(wparam == VK_OEM_4)
+                wndProcData->keys[KEY_LEFT_BRACKET].isDown = isDown;
+            else if(wparam == VK_OEM_5)
+                wndProcData->keys[KEY_BACKSLASH].isDown = isDown;
+            else if(wparam == VK_OEM_6)
+                wndProcData->keys[KEY_RIGHT_BRACKET].isDown = isDown;
+            else if(wparam == VK_OEM_7)
+                wndProcData->keys[KEY_APOSTROPHE].isDown = isDown;
+
             break;
         }
         case WM_DESTROY:
@@ -236,6 +307,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
                 dt = (1.f / 60.f);
         }
 
+        keysUpdateWasDownState(wndProcData.keys, KEY_COUNT);
+
         { // Process Windows message queue
             MSG msg = {};
             while(PeekMessageW(&msg, 0, 0, 0, PM_REMOVE))
@@ -246,6 +319,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
                 DispatchMessageW(&msg);
             }
         }
+
+        if(wndProcData.keys[KEY_ESC].isDown)
+            break;
 
         if(wndProcData.windowDidResize)
         {
@@ -273,32 +349,34 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             wndProcData.windowDidResize = false;
         }
 
-        mat4 playerModelMat;
+        if(wndProcData.keys[KEY_TAB].wentDown())
+            freeCam = !freeCam;
+
+        mat4 viewMat;
+
+        if(freeCam)
+            viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt);
+        else 
         { // Update player position
             vec3 playerRight = cross(playerFwd, {0, 1, 0});
 
             const float PLAYER_MOVE_SPEED = 5.f;
             const float PLAYER_MOVE_AMOUNT = PLAYER_MOVE_SPEED * dt;
-            if(wndProcData.keyIsDown[GameActionMoveCamFwd])
+            if(wndProcData.keys[KEY_W].isDown)
                 playerPos += playerFwd * PLAYER_MOVE_AMOUNT;
-            if(wndProcData.keyIsDown[GameActionMoveCamBack])
+            if(wndProcData.keys[KEY_S].isDown)
                 playerPos -= playerFwd * PLAYER_MOVE_AMOUNT;
-            if(wndProcData.keyIsDown[GameActionMoveCamLeft])
+            if(wndProcData.keys[KEY_A].isDown)
                 playerPos -= playerRight * PLAYER_MOVE_AMOUNT;
-            if(wndProcData.keyIsDown[GameActionMoveCamRight])
+            if(wndProcData.keys[KEY_D].isDown)
                 playerPos += playerRight * PLAYER_MOVE_AMOUNT;
 
-            playerModelMat = scaleMat({1,1,1}) * translationMat(playerPos);
-        }
-
-        mat4 viewMat;
-        if(freeCam)
-            viewMat = cameraUpdateFreeCam(&camera, wndProcData.keyIsDown, dt);
-        else 
             viewMat = cameraUpdateFollowPlayer(&camera, playerPos);
+        }
+        mat4 playerModelMat = scaleMat({1,1,1}) * translationMat(playerPos);
+
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
 
-        // Spin the cube
         const int NUM_CUBES = 5;
         vec3 cubePositions[NUM_CUBES] = {
             {4,0,-6},
@@ -311,7 +389,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             {3,3,3},
             {1,2,5},
             {3,1,8},
-            {5,0.2, 6},
+            {5,0.2,6},
             {20,0.5,20},
         };
 

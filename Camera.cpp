@@ -17,33 +17,33 @@ Camera cameraInit(vec3 pos, vec3 targetPos)
 const float CAM_MOVE_SPEED = 5.f; // in metres per second
 const float CAM_TURN_SPEED = PI32; // in radians per second
 
-mat4 cameraUpdateFreeCam(Camera* camera, bool keys[], float dt)
+mat4 cameraUpdateFreeCam(Camera* camera, KeyState keys[], float dt)
 {
     vec3 camFwdXZ = normalise({camera->fwd.x, 0, camera->fwd.z});
     vec3 camRightXZ = cross(camFwdXZ, {0, 1, 0});
 
     const float CAM_MOVE_AMOUNT = CAM_MOVE_SPEED * dt;
-    if(keys[GameActionMoveCamFwd])
+    if(keys[KEY_W].isDown)
         camera->pos += camFwdXZ * CAM_MOVE_AMOUNT;
-    if(keys[GameActionMoveCamBack])
+    if(keys[KEY_S].isDown)
         camera->pos -= camFwdXZ * CAM_MOVE_AMOUNT;
-    if(keys[GameActionMoveCamLeft])
+    if(keys[KEY_A].isDown)
         camera->pos -= camRightXZ * CAM_MOVE_AMOUNT;
-    if(keys[GameActionMoveCamRight])
+    if(keys[KEY_D].isDown)
         camera->pos += camRightXZ * CAM_MOVE_AMOUNT;
-    if(keys[GameActionRaiseCam])
+    if(keys[KEY_E].isDown)
         camera->pos.y += CAM_MOVE_AMOUNT;
-    if(keys[GameActionLowerCam])
+    if(keys[KEY_Q].isDown)
         camera->pos.y -= CAM_MOVE_AMOUNT;
     
     const float CAM_TURN_AMOUNT = CAM_TURN_SPEED * dt;
-    if(keys[GameActionTurnCamLeft])
+    if(keys[KEY_LEFT].isDown)
         camera->yaw += CAM_TURN_AMOUNT;
-    if(keys[GameActionTurnCamRight])
+    if(keys[KEY_RIGHT].isDown)
         camera->yaw -= CAM_TURN_AMOUNT;
-    if(keys[GameActionLookUp])
+    if(keys[KEY_UP].isDown)
         camera->pitch += CAM_TURN_AMOUNT;
-    if(keys[GameActionLookDown])
+    if(keys[KEY_DOWN].isDown)
         camera->pitch -= CAM_TURN_AMOUNT;
 
     // Wrap yaw to avoid floating-point errors if we turn too far

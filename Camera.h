@@ -9,6 +9,8 @@ struct Camera {
     float yaw;
 };
 
+struct KeyState;
+
 Camera cameraInit(vec3 pos, vec3 targetPos);
-mat4 cameraUpdateFreeCam(Camera* camera, bool keys[], float dt);
+mat4 cameraUpdateFreeCam(Camera* camera, KeyState keys[], float dt);
 mat4 cameraUpdateFollowPlayer(Camera* camera, vec3 playerPos);
