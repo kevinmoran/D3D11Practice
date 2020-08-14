@@ -277,7 +277,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
     // Player
     vec3 playerPos = {0,0,0};
-    vec3 playerFwd = {0,0,-1};    
+    vec3 playerFwd = {0,0,-1};
+    vec3 playerVel = {0,0,0};
 
     LONGLONG startPerfCount = 0;
     LONGLONG perfCounterFrequency = 0;
@@ -358,18 +359,27 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt);
         else 
         { // Update player position
-            vec3 playerRight = cross(playerFwd, {0, 1, 0});
+            vec3 camFwdXZ = normalise({camera.fwd.x, 0, camera.fwd.z});
+            vec3 camRightXZ = normalise(cross(camFwdXZ, {0, 1, 0}));
 
-            const float PLAYER_MOVE_SPEED = 5.f;
-            const float PLAYER_MOVE_AMOUNT = PLAYER_MOVE_SPEED * dt;
+            const float PLAYER_ACCELERATION = 50.f;
+            const float PLAYER_FRICTION = 0.9f;
+            vec3 accDir = {};
             if(wndProcData.keys[KEY_W].isDown)
-                playerPos += playerFwd * PLAYER_MOVE_AMOUNT;
+                accDir += camFwdXZ;
             if(wndProcData.keys[KEY_S].isDown)
-                playerPos -= playerFwd * PLAYER_MOVE_AMOUNT;
+                accDir -= camFwdXZ;
             if(wndProcData.keys[KEY_A].isDown)
-                playerPos -= playerRight * PLAYER_MOVE_AMOUNT;
+                accDir -= camRightXZ;
             if(wndProcData.keys[KEY_D].isDown)
-                playerPos += playerRight * PLAYER_MOVE_AMOUNT;
+                accDir += camRightXZ;
+
+            accDir = normaliseOrZero(accDir);
+            
+            playerVel += accDir * PLAYER_ACCELERATION * dt;
+            playerVel *= PLAYER_FRICTION;
+            
+            playerPos += playerVel * dt;
 
             viewMat = cameraUpdateFollowPlayer(&camera, playerPos);
         }

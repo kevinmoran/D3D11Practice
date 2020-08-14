@@ -44,6 +44,12 @@ inline vec3 normalise(vec3 v) {
     return v * (1.f / length(v));
 }
 
+inline vec3 normaliseOrZero(vec3 v) {
+    float l = length(v);
+    if(l < 0.00001f) return {};
+    return v * (1.f / l);
+}
+
 inline vec3 cross(vec3 a, vec3 b) {
     return {
         a.y*b.z - a.z*b.y,
@@ -63,6 +69,12 @@ inline vec3 operator-= (vec3 &lhs, vec3 rhs) {
     lhs.x -= rhs.x;
     lhs.y -= rhs.y;
     lhs.z -= rhs.z;
+    return lhs;
+}
+inline vec3 operator*= (vec3 &lhs, float rhs) {
+    lhs.x *= rhs;
+    lhs.y *= rhs;
+    lhs.z *= rhs;
     return lhs;
 }
 
