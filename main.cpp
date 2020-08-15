@@ -359,23 +359,25 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt);
         else 
         { // Update player position
+            KeyState* keys = wndProcData.keys;
+
             vec3 camFwdXZ = normalise({camera.fwd.x, 0, camera.fwd.z});
             vec3 camRightXZ = normalise(cross(camFwdXZ, {0, 1, 0}));
 
-            const float PLAYER_ACCELERATION = 50.f;
-            const float PLAYER_FRICTION = 0.9f;
             vec3 accDir = {};
-            if(wndProcData.keys[KEY_W].isDown)
+            if(keys[KEY_W].isDown)
                 accDir += camFwdXZ;
-            if(wndProcData.keys[KEY_S].isDown)
+            if(keys[KEY_S].isDown)
                 accDir -= camFwdXZ;
-            if(wndProcData.keys[KEY_A].isDown)
+            if(keys[KEY_A].isDown)
                 accDir -= camRightXZ;
-            if(wndProcData.keys[KEY_D].isDown)
+            if(keys[KEY_D].isDown)
                 accDir += camRightXZ;
 
             accDir = normaliseOrZero(accDir);
             
+            const float PLAYER_ACCELERATION = 100.f;
+            const float PLAYER_FRICTION = 0.8f;
             playerVel += accDir * PLAYER_ACCELERATION * dt;
             playerVel *= PLAYER_FRICTION;
             
@@ -389,10 +391,10 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
         const int NUM_CUBES = 5;
         vec3 cubePositions[NUM_CUBES] = {
-            {4,0,-6},
+            {8,0,-6},
             {-1,2,-5},
             {3,1,-8},
-            {-0.5,0.2, 6},
+            {-0.5,0.2,6},
             {0,-1,0},
         };
         vec3 cubeScales[NUM_CUBES] = {
