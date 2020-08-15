@@ -345,7 +345,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             assert(SUCCEEDED(res));
             
             d3d11InitRenderTargetsAndDepthBuffer(&d3d11Data);
-            perspectiveMat = makePerspectiveMat(windowAspectRatio, degreesToRadians(84), 0.1f, 1000.f);
+            perspectiveMat = makePerspectiveMat(windowAspectRatio, degreesToRadians(100), 0.1f, 1000.f);
 
             wndProcData.windowDidResize = false;
         }

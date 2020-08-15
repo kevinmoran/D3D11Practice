@@ -131,13 +131,13 @@ inline mat4 translationMat(vec3 trans) {
     };
 }
 
-inline mat4 makePerspectiveMat(float aspectRatio, float fovYRadians, float zNear, float zFar)
+inline mat4 makePerspectiveMat(float aspectRatio, float fovXRadians, float zNear, float zFar)
 {
-    // float yScale = 1 / tanf(0.5f * fovYRadians); 
+    // float xScale = 1 / tanf(0.5f * fovXRadians); 
     // NOTE: 1/tan(X) = tan(90degs - X), so we can avoid a divide
-    // float yScale = tanf((0.5f * M_PI) - (0.5f * fovYRadians));
-    float yScale = tanf(0.5f * (PI32 - fovYRadians));
-    float xScale = yScale / aspectRatio;
+    // float xScale = tanf((0.5f * PI32) - (0.5f * fovXRadians));
+    float xScale = tanf(0.5f * (PI32 - fovXRadians));
+    float yScale = xScale * aspectRatio;
     float zRangeInverse = 1.f / (zNear - zFar);
     float zScale = zFar * zRangeInverse;
     float zTranslation = zFar * zNear * zRangeInverse;
