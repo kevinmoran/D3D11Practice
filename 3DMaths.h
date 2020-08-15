@@ -71,6 +71,7 @@ inline vec3 operator-= (vec3 &lhs, vec3 rhs) {
     lhs.z -= rhs.z;
     return lhs;
 }
+
 inline vec3 operator*= (vec3 &lhs, float rhs) {
     lhs.x *= rhs;
     lhs.y *= rhs;
