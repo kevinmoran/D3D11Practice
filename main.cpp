@@ -289,6 +289,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     vec3 playerVel = {0,0,0};
     vec3 playerFwd = {0,0,1};
     float playerYRotation = 0.f;
+    float playerRotateSpeed = 0.f;
 
     LONGLONG startPerfCount = 0;
     LONGLONG perfCounterFrequency = 0;
@@ -362,6 +363,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
         if(wndProcData.keys[KEY_TAB].wentDown())
             freeCam = !freeCam;
+        if(wndProcData.keys[KEY_R].wentDown())
+            playerPos = {};
 
         mat4 viewMat;
 
@@ -386,16 +389,24 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
             float moveDirLength = length(moveDir);
 
-            if(moveDirLength < 0.00001f) 
+            if(moveDirLength < 0.00001f)
                 moveDir = {};
-            else {
+            else { // Rotate to face direction of movement
                 moveDir *= (1.f / moveDirLength); // Normalise
-                float angleBetween = acosf(dot(playerFwd, moveDir));
+
+                const float PLAYER_ROTATE_ACC = 100.f * PI32;
+                float rotateSign = (cross(playerFwd, moveDir).y < 0) ? -1.f : 1.f;
+                playerRotateSpeed += PLAYER_ROTATE_ACC * rotateSign * dt;
+                const float PLAYER_ROTATE_FRICTION = 0.7f;
+                playerRotateSpeed *= PLAYER_ROTATE_FRICTION;
+                float rotateAmount = playerRotateSpeed * dt;
                 
-                const float PLAYER_ROTATE_SPEED = 4 * PI32;
-                float rotateAmount = MIN(PLAYER_ROTATE_SPEED * dt, angleBetween);
-                if(cross(playerFwd, moveDir).y < 0)
-                    rotateAmount *= -1;
+                // Avoid over-rotating
+                float angleBetween = acosf(CLAMP(dot(playerFwd, moveDir), 0.f, 1.f));
+                if(fabsf(rotateAmount) > angleBetween) {
+                    rotateAmount = angleBetween * rotateSign;
+                    playerRotateSpeed = 0.f;
+                }
                 
                 playerYRotation += rotateAmount;
             }

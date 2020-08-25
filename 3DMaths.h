@@ -4,6 +4,8 @@
 
 #define PI32 3.14159265358979323846f
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define CLAMP(x,lo,hi) (MIN(MAX((x),(lo)),(hi)))
 
 struct vec3
 {
