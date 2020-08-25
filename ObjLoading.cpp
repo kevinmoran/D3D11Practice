@@ -138,7 +138,7 @@ static int fixupIndex(int index, size_t size)
 
 static bool areAlmostEqual(float a, float b)
 {
-    return (fabs(a-b) < 0.00001f);
+    return (fabsf(a-b) < 0.00001f);
 }
 
 static void growArray(void** array, size_t* capacity, size_t itemSize)
@@ -230,12 +230,14 @@ LoadedObj loadObj(const char* filename)
         else if(currChar == 'f')
         {
             ++s;
+            int numVertsPerFace = 0;
             while(*s != '\r' && *s != '\n' && *s != '\0')
             {
+                ++numVertsPerFace;
+                assert(numVertsPerFace < 4); // we don't support quads
                 int vpIdx = 0, vtIdx = 0, vnIdx = 0;
                 s = parseFaceElement(s, vpIdx, vtIdx, vnIdx);
-                if(!vpIdx)
-                    assert(vpIdx != 0);
+                assert(vpIdx != 0);
 
                 vpIdx = fixupIndex(vpIdx, numVertexPositions);
                 vtIdx = fixupIndex(vtIdx, numVertexTexCoords);
