@@ -1,5 +1,5 @@
 
-cbuffer constants : register(b0)
+cbuffer VS_Constants : register(b0)
 {
     float4x4 modelViewProj;
 };
@@ -12,6 +12,11 @@ struct VS_Input {
 struct VS_Output {
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD;
+};
+
+cbuffer PS_Constants : register(b0)
+{
+    float4 tintColour;
 };
 
 Texture2D diffuseTexture : register(t0);
@@ -27,5 +32,5 @@ VS_Output vs_main(VS_Input input)
 
 float4 ps_main(VS_Output input) : SV_Target
 {
-    return diffuseTexture.Sample(samplerState, input.uv);   
+    return diffuseTexture.Sample(samplerState, input.uv) * tintColour;
 }

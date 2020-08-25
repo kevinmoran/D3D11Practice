@@ -3,6 +3,7 @@
 #include <math.h>
 
 #define PI32 3.14159265358979323846f
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 struct vec3
 {
@@ -30,6 +31,10 @@ inline float degreesToRadians(float degs) {
 
 inline float length(vec3 v) {
     return sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+inline float dot(vec3 a, vec3 b) {
+    return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
 inline float dot(vec4 a, vec4 b) {
