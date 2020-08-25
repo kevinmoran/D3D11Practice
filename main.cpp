@@ -287,6 +287,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     // Player
     vec3 playerPos = {0,0,0};
     vec3 playerVel = {0,0,0};
+    vec3 playerFwd = {0,0,1};
+    float playerYRotation = 0.f;
 
     LONGLONG startPerfCount = 0;
     LONGLONG perfCounterFrequency = 0;
@@ -382,7 +384,21 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             if(keys[KEY_D].isDown)
                 moveDir += camRightXZ;
 
-            moveDir = normaliseOrZero(moveDir);
+            float moveDirLength = length(moveDir);
+
+            if(moveDirLength < 0.00001f) 
+                moveDir = {};
+            else {
+                moveDir *= (1.f / moveDirLength); // Normalise
+                float angleBetween = acosf(dot(playerFwd, moveDir));
+                
+                const float PLAYER_ROTATE_SPEED = 4 * PI32;
+                float rotateAmount = MIN(PLAYER_ROTATE_SPEED * dt, angleBetween);
+                if(cross(playerFwd, moveDir).y < 0)
+                    rotateAmount *= -1;
+                
+                playerYRotation += rotateAmount;
+            }
             
             const float PLAYER_ACCELERATION = 100.f;
             const float PLAYER_FRICTION = 0.8f;
@@ -393,7 +409,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
             viewMat = cameraUpdateFollowPlayer(&camera, playerPos);
         }
-        mat4 playerModelMat = scaleMat({1,1,1}) * translationMat(playerPos);
+        mat4 playerModelMat = rotateYMat(playerYRotation) * scaleMat({1,1,1}) * translationMat(playerPos);
+        playerFwd = {playerModelMat.m[0][2], playerModelMat.m[1][2], playerModelMat.m[2][2]};
+
 
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
 
