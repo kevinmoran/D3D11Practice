@@ -16,6 +16,7 @@
 #include "3DMaths.h"
 #include "Input.h"
 #include "Camera.h"
+#include "Player.h"
 
 #define WINDOW_TITLE L"D3D11"
 
@@ -284,12 +285,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     mat4 perspectiveMat = {};
     wndProcData.windowDidResize = true; // To force initial perspectiveMat calculation
 
-    // Player
-    vec3 playerPos = {0,0,0};
-    vec3 playerVel = {0,0,0};
-    vec3 playerFwd = {0,0,1};
-    float playerYRotation = 0.f;
-    float playerRotateSpeed = 0.f;
+    Player player = playerInit({0,0,0}, normalise({0,0,1}));
 
     LONGLONG startPerfCount = 0;
     LONGLONG perfCounterFrequency = 0;
@@ -363,8 +359,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
         if(wndProcData.keys[KEY_TAB].wentDown())
             freeCam = !freeCam;
-        if(wndProcData.keys[KEY_R].wentDown())
-            playerPos = {};
+        if(wndProcData.keys[KEY_R].wentDown()) 
+            player = playerInit({}, {0,0,1});
 
         mat4 viewMat;
 
@@ -395,33 +391,33 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
                 moveDir *= (1.f / moveDirLength); // Normalise
 
                 const float PLAYER_ROTATE_ACC = 100.f * PI32;
-                float rotateSign = (cross(playerFwd, moveDir).y < 0) ? -1.f : 1.f;
-                playerRotateSpeed += PLAYER_ROTATE_ACC * rotateSign * dt;
+                float rotateSign = (cross(player.fwd, moveDir).y < 0) ? -1.f : 1.f;
+                player.rotateSpeed += PLAYER_ROTATE_ACC * rotateSign * dt;
                 const float PLAYER_ROTATE_FRICTION = 0.7f;
-                playerRotateSpeed *= PLAYER_ROTATE_FRICTION;
-                float rotateAmount = playerRotateSpeed * dt;
+                player.rotateSpeed *= PLAYER_ROTATE_FRICTION;
+                float rotateAmount = player.rotateSpeed * dt;
                 
                 // Avoid over-rotating
-                float angleBetween = acosf(CLAMP(dot(playerFwd, moveDir), 0.f, 1.f));
+                float angleBetween = acosf(CLAMP(dot(player.fwd, moveDir), 0.f, 1.f));
                 if(fabsf(rotateAmount) > angleBetween) {
                     rotateAmount = angleBetween * rotateSign;
-                    playerRotateSpeed = 0.f;
+                    player.rotateSpeed = 0.f;
                 }
                 
-                playerYRotation += rotateAmount;
+                player.yRotation += rotateAmount;
             }
             
             const float PLAYER_ACCELERATION = 100.f;
             const float PLAYER_FRICTION = 0.8f;
-            playerVel *= PLAYER_FRICTION;
-            playerVel += moveDir * PLAYER_ACCELERATION * dt;
+            player.vel *= PLAYER_FRICTION;
+            player.vel += moveDir * PLAYER_ACCELERATION * dt;
             
-            playerPos += playerVel * dt;
+            player.pos += player.vel * dt;
 
-            viewMat = cameraUpdateFollowPlayer(&camera, playerPos);
+            viewMat = cameraUpdateFollowPlayer(&camera, player.pos);
         }
-        mat4 playerModelMat = rotateYMat(playerYRotation) * scaleMat({1,1,1}) * translationMat(playerPos);
-        playerFwd = {playerModelMat.m[0][2], playerModelMat.m[1][2], playerModelMat.m[2][2]};
+        mat4 playerModelMat = rotateYMat(player.yRotation) * scaleMat({1,1,1}) * translationMat(player.pos);
+        player.fwd = {playerModelMat.m[0][2], playerModelMat.m[1][2], playerModelMat.m[2][2]};
 
 
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;

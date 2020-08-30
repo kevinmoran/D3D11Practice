@@ -14,7 +14,7 @@ set LINKER_FLAGS=/INCREMENTAL:NO /opt:ref
 set SYSTEM_LIBS=user32.lib gdi32.lib winmm.lib d3d11.lib d3dcompiler.lib
 
 REM Uncomment one of these to choose between normal or Single Translation Unit build 
-REM set SRC_FILES=../main.cpp ../Camera.cpp ../ObjLoading.cpp ../D3D11Helpers.cpp
+REM set SRC_FILES=../main.cpp ../Player.cpp ../Camera.cpp ../ObjLoading.cpp ../D3D11Helpers.cpp
 set SRC_FILES=../jumbo.cpp
 
 set BUILD_DIR=".\build"
