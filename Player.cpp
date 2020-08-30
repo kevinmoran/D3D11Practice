@@ -23,6 +23,11 @@ mat4 playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
         moveDir -= camRightXZ;
     if(keys[KEY_D].isDown)
         moveDir += camRightXZ;
+    if(keys[KEY_SPACE].wentDown() && player->isOnGround) {
+        player->isOnGround = false;
+        const float PLAYER_JUMP_VELOCITY = 30.0f;
+        player->vel.y = PLAYER_JUMP_VELOCITY;
+    }
 
     float moveDirLength = length(moveDir);
 
@@ -50,10 +55,22 @@ mat4 playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
     
     const float PLAYER_ACCELERATION = 100.f;
     const float PLAYER_FRICTION = 0.8f;
-    player->vel *= PLAYER_FRICTION;
+    player->vel.x *= PLAYER_FRICTION;
+    player->vel.z *= PLAYER_FRICTION;
     player->vel += moveDir * PLAYER_ACCELERATION * dt;
-    
+
+    if(!player->isOnGround) {
+        const float PLAYER_GRAVITY = -80.f;
+        player->vel.y += PLAYER_GRAVITY * dt;
+    }
+
     player->pos += player->vel * dt;
+
+    if(player->pos.y <= 0.f) {
+        player->pos.y = 0.f;
+        player->vel.y = 0.f;
+        player->isOnGround = true;
+    }
 
     mat4 modelMatrix = calculateModelMatrix(*player);
     player->fwd = {modelMatrix.m[0][2], modelMatrix.m[1][2], modelMatrix.m[2][2]};

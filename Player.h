@@ -9,6 +9,7 @@ struct Player {
     vec3 fwd;
     float yRotation;
     float rotateSpeed;
+    bool isOnGround;
 };
 
 Player playerInit(vec3 pos, vec3 fwd);
