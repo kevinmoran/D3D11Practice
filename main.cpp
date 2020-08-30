@@ -413,8 +413,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             
             const float PLAYER_ACCELERATION = 100.f;
             const float PLAYER_FRICTION = 0.8f;
-            playerVel += moveDir * PLAYER_ACCELERATION * dt;
             playerVel *= PLAYER_FRICTION;
+            playerVel += moveDir * PLAYER_ACCELERATION * dt;
             
             playerPos += playerVel * dt;
 
