@@ -363,62 +363,17 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             player = playerInit({}, {0,0,1});
 
         mat4 viewMat;
+        mat4 playerModelMat;
 
-        if(freeCam)
+        if(freeCam) {
+            playerModelMat = calculateModelMatrix(player);
             viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt);
+        }
         else 
-        { // Move player
-            KeyState* keys = wndProcData.keys;
-
-            vec3 camFwdXZ = normalise({camera.fwd.x, 0, camera.fwd.z});
-            vec3 camRightXZ = normalise(cross(camFwdXZ, {0, 1, 0}));
-
-            vec3 moveDir = {};
-            if(keys[KEY_W].isDown)
-                moveDir += camFwdXZ;
-            if(keys[KEY_S].isDown)
-                moveDir -= camFwdXZ;
-            if(keys[KEY_A].isDown)
-                moveDir -= camRightXZ;
-            if(keys[KEY_D].isDown)
-                moveDir += camRightXZ;
-
-            float moveDirLength = length(moveDir);
-
-            if(moveDirLength < 0.00001f)
-                moveDir = {};
-            else { // Rotate to face direction of movement
-                moveDir *= (1.f / moveDirLength); // Normalise
-
-                const float PLAYER_ROTATE_ACC = 100.f * PI32;
-                float rotateSign = (cross(player.fwd, moveDir).y < 0) ? -1.f : 1.f;
-                player.rotateSpeed += PLAYER_ROTATE_ACC * rotateSign * dt;
-                const float PLAYER_ROTATE_FRICTION = 0.7f;
-                player.rotateSpeed *= PLAYER_ROTATE_FRICTION;
-                float rotateAmount = player.rotateSpeed * dt;
-                
-                // Avoid over-rotating
-                float angleBetween = acosf(CLAMP(dot(player.fwd, moveDir), 0.f, 1.f));
-                if(fabsf(rotateAmount) > angleBetween) {
-                    rotateAmount = angleBetween * rotateSign;
-                    player.rotateSpeed = 0.f;
-                }
-                
-                player.yRotation += rotateAmount;
-            }
-            
-            const float PLAYER_ACCELERATION = 100.f;
-            const float PLAYER_FRICTION = 0.8f;
-            player.vel *= PLAYER_FRICTION;
-            player.vel += moveDir * PLAYER_ACCELERATION * dt;
-            
-            player.pos += player.vel * dt;
-
+        {
+            playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt),
             viewMat = cameraUpdateFollowPlayer(&camera, player.pos);
         }
-        mat4 playerModelMat = rotateYMat(player.yRotation) * scaleMat({1,1,1}) * translationMat(player.pos);
-        player.fwd = {playerModelMat.m[0][2], playerModelMat.m[1][2], playerModelMat.m[2][2]};
-
 
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
 
