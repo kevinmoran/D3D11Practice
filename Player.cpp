@@ -44,7 +44,7 @@ mat4 playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
         float rotateAmount = player->rotateSpeed * dt;
         
         // Avoid over-rotating
-        float angleBetween = acosf(CLAMP(dot(player->fwd, moveDir), 0.f, 1.f));
+        float angleBetween = acosf(CLAMP(dot(player->fwd, moveDir), -1.f, 1.f));
         if(fabsf(rotateAmount) > angleBetween) {
             rotateAmount = angleBetween * rotateSign;
             player->rotateSpeed = 0.f;

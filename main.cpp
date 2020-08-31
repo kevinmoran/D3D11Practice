@@ -374,8 +374,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             playerModelMat = calculateModelMatrix(player);
             viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt*timeStepMultiplier);
         }
-        else 
-        {
+        else {
             playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier),
             viewMat = cameraUpdateFollowPlayer(&camera, player.pos);
         }
