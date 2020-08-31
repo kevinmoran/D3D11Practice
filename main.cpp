@@ -384,9 +384,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         if(wndProcData.keys[KEY_R].wentDown()) 
             player = playerInit({}, {0,0,1});
         if(wndProcData.keys[KEY_MINUS].wentDown())
-            timeStepMultiplier = MAX(timeStepMultiplier*0.5f, 0.25f);
+            timeStepMultiplier = CLAMP_ABOVE(timeStepMultiplier*0.5f, 0.25f);
         if(wndProcData.keys[KEY_PLUS].wentDown())
-            timeStepMultiplier = MIN(timeStepMultiplier*2.f, 2.f);
+            timeStepMultiplier = CLAMP_BELOW(timeStepMultiplier*2.f, 2.f);
 
         mat4 viewMat;
         mat4 playerModelMat;

@@ -53,10 +53,7 @@ mat4 cameraUpdateFreeCam(Camera* camera, KeyState keys[], float dt)
         camera->yaw += 2*PI32;
 
     // Clamp pitch to stop camera flipping upside down
-    if(camera->pitch > degreesToRadians(85)) 
-        camera->pitch = degreesToRadians(85);
-    if(camera->pitch < -degreesToRadians(85)) 
-        camera->pitch = -degreesToRadians(85);
+    camera->pitch = CLAMP_BETWEEN(camera->pitch, -degreesToRadians(85), degreesToRadians(85));
 
     mat4 viewMat = translationMat(-camera->pos) * rotateYMat(-camera->yaw) * rotateXMat(-camera->pitch);
     camera->fwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
