@@ -197,6 +197,18 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
     WndProcData wndProcData = {};
     SetWindowLongPtrW(hWindow, GWLP_USERDATA, (LONG)&wndProcData);
+
+    LONGLONG startPerfCount = 0;
+    LONGLONG perfCounterFrequency = 0;
+    { // Initialise timing data
+        LARGE_INTEGER perfCount;
+        QueryPerformanceCounter(&perfCount);
+        startPerfCount = perfCount.QuadPart;
+        LARGE_INTEGER perfFreq;
+        QueryPerformanceFrequency(&perfFreq);
+        perfCounterFrequency = perfFreq.QuadPart;
+    }
+    double currentTimeInSeconds = 0.0;
     
     D3D11Data d3d11Data;
     d3d11Init(hWindow, &d3d11Data);
@@ -287,17 +299,26 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
     Player player = playerInit({0,0,0}, normalise({0,0,1}));
 
-    LONGLONG startPerfCount = 0;
-    LONGLONG perfCounterFrequency = 0;
-    { // Initialise timing data
-        LARGE_INTEGER perfCount;
-        QueryPerformanceCounter(&perfCount);
-        startPerfCount = perfCount.QuadPart;
-        LARGE_INTEGER perfFreq;
-        QueryPerformanceFrequency(&perfFreq);
-        perfCounterFrequency = perfFreq.QuadPart;
-    }
-    double currentTimeInSeconds = 0.0;
+    const int NUM_CUBES = 5;
+    vec3 cubePositions[NUM_CUBES] = {
+        {8,0,-6},
+        {-1,2,-5},
+        {3,1,-8},
+        {-0.5,0.2,6},
+        {0,-1,0},
+    };
+    vec3 cubeScales[NUM_CUBES] = {
+        {3,3,3},
+        {1,2,5},
+        {3,1,8},
+        {5,0.2,6},
+        {20,0.5,20},
+    };
+
+    mat4 cubeModelMats[NUM_CUBES];
+    for(int i=0; i<NUM_CUBES; ++i)
+        cubeModelMats[i] = scaleMat(cubeScales[i]) * translationMat(cubePositions[i]);
+        
     float timeStepMultiplier = 1.f;
 
     // Main Loop
@@ -380,26 +401,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         }
 
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
-
-        const int NUM_CUBES = 5;
-        vec3 cubePositions[NUM_CUBES] = {
-            {8,0,-6},
-            {-1,2,-5},
-            {3,1,-8},
-            {-0.5,0.2,6},
-            {0,-1,0},
-        };
-        vec3 cubeScales[NUM_CUBES] = {
-            {3,3,3},
-            {1,2,5},
-            {3,1,8},
-            {5,0.2,6},
-            {20,0.5,20},
-        };
-
-        mat4 cubeModelMats[NUM_CUBES];
-        for(int i=0; i<NUM_CUBES; ++i)
-            cubeModelMats[i] = scaleMat(cubeScales[i]) * translationMat(cubePositions[i]);
 
         FLOAT backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
         d3d11Data.deviceContext->ClearRenderTargetView(d3d11Data.msaaRenderTargetView, backgroundColor);
