@@ -298,6 +298,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         perfCounterFrequency = perfFreq.QuadPart;
     }
     double currentTimeInSeconds = 0.0;
+    float timeStepMultiplier = 1.f;
 
     // Main Loop
     bool isRunning = true;
@@ -361,17 +362,21 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             freeCam = !freeCam;
         if(wndProcData.keys[KEY_R].wentDown()) 
             player = playerInit({}, {0,0,1});
+        if(wndProcData.keys[KEY_MINUS].wentDown())
+            timeStepMultiplier = MAX(timeStepMultiplier*0.5f, 0.25f);
+        if(wndProcData.keys[KEY_PLUS].wentDown())
+            timeStepMultiplier = MIN(timeStepMultiplier*2.f, 2.f);
 
         mat4 viewMat;
         mat4 playerModelMat;
 
         if(freeCam) {
             playerModelMat = calculateModelMatrix(player);
-            viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt);
+            viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt*timeStepMultiplier);
         }
         else 
         {
-            playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt),
+            playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier),
             viewMat = cameraUpdateFollowPlayer(&camera, player.pos);
         }
 
