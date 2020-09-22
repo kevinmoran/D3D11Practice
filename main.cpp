@@ -232,8 +232,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     ID3D11PixelShader* pixelShader;
     d3d11CreatePixelShader(d3d11Data.device, L"shaders.hlsl", "ps_main", &pixelShader);
     
-    Mesh suzanneMesh = {};
-    d3d11CreateMesh(d3d11Data.device, "suzanne.obj", &suzanneMesh);
+    Mesh playerMesh = {};
+    d3d11CreateMesh(d3d11Data.device, "cube.obj", &playerMesh);
 
     Mesh cubeMesh = {};
     d3d11CreateMesh(d3d11Data.device, "cube.obj", &cubeMesh);
@@ -428,15 +428,15 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         d3d11Data.deviceContext->PSSetSamplers(0, 1, &samplerState);
 
         { // Draw player
-            d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &suzanneMesh.vertexBuffer, &suzanneMesh.stride, &suzanneMesh.offset);
-            d3d11Data.deviceContext->IASetIndexBuffer(suzanneMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+            d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &playerMesh.vertexBuffer, &playerMesh.stride, &playerMesh.offset);
+            d3d11Data.deviceContext->IASetIndexBuffer(playerMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
             PerObjectVSConstants vsConstants = { playerModelMat * viewMat * perspectiveMat };
             d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
             PerObjectPSConstants psConstants = { {0.8f, 0.1f, 0.3f, 1.0f} };
             d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
 
-            d3d11Data.deviceContext->DrawIndexed(suzanneMesh.numIndices, 0, 0);
+            d3d11Data.deviceContext->DrawIndexed(playerMesh.numIndices, 0, 0);
         }
 
         d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &cubeMesh.vertexBuffer, &cubeMesh.stride, &cubeMesh.offset);
@@ -464,8 +464,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     samplerState->Release();
     cubeMesh.indexBuffer->Release();
     cubeMesh.vertexBuffer->Release();
-    suzanneMesh.indexBuffer->Release();
-    suzanneMesh.vertexBuffer->Release();
+    playerMesh.indexBuffer->Release();
+    playerMesh.vertexBuffer->Release();
     pixelShader->Release();
     inputLayout->Release();
     vertexShader->Release();
