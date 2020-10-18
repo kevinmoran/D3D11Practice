@@ -31,7 +31,8 @@ struct Mesh
     UINT offset;
 };
 
-bool d3d11CreateMesh(ID3D11Device1* device, const char* fileName, Mesh* mesh);
+struct LoadedObj;
+bool d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj, Mesh* mesh);
 
 struct Texture
 {

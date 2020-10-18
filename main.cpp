@@ -15,6 +15,7 @@
 #include "D3D11Helpers.h"
 #include "3DMaths.h"
 #include "Input.h"
+#include "ObjLoading.h"
 #include "Camera.h"
 #include "Player.h"
 
@@ -231,12 +232,16 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     // Create Pixel Shader
     ID3D11PixelShader* pixelShader;
     d3d11CreatePixelShader(d3d11Data.device, L"shaders.hlsl", "ps_main", &pixelShader);
-    
-    Mesh playerMesh = {};
-    d3d11CreateMesh(d3d11Data.device, "cube.obj", &playerMesh);
+
+    LoadedObj cubeObj = loadObj("cube.obj");
 
     Mesh cubeMesh = {};
-    d3d11CreateMesh(d3d11Data.device, "cube.obj", &cubeMesh);
+    d3d11CreateMesh(d3d11Data.device, cubeObj, &cubeMesh);
+    
+    Mesh playerMesh = {};
+    d3d11CreateMesh(d3d11Data.device, cubeObj, &playerMesh);
+    
+    freeLoadedObj(cubeObj);
 
     Texture cubeTexture = {};
     d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "test.png", &cubeTexture);

@@ -220,10 +220,8 @@ bool d3d11CreatePixelShader(ID3D11Device1* device, LPCWSTR fileName, LPCSTR shad
     return true;
 }
 
-bool d3d11CreateMesh(ID3D11Device1* device, const char* fileName, Mesh* mesh)
+bool d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj, Mesh* mesh)
 {
-    LoadedObj obj = loadObj(fileName);
-
     mesh->stride = sizeof(VertexData);
     mesh->numVertices = obj.numVertices;
     mesh->offset = 0;
@@ -248,8 +246,6 @@ bool d3d11CreateMesh(ID3D11Device1* device, const char* fileName, Mesh* mesh)
 
     hResult = device->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &mesh->indexBuffer);
     assert(SUCCEEDED(hResult));
-
-    freeLoadedObj(obj);
 
     return true;
 }
