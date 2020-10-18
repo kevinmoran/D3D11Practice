@@ -16,6 +16,9 @@ struct ColliderData
     vec3* vertices;
     u32 numPlanes;
     Plane* planes;
+
+    mat4 modelMatrix;
+    mat4 normalMatrix;
 };
 
 ColliderData createColliderData(const LoadedObj &obj)

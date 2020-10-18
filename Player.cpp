@@ -73,6 +73,6 @@ mat4 playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
     }
 
     mat4 modelMatrix = calculateModelMatrix(*player);
-    player->fwd = {modelMatrix.m[0][2], modelMatrix.m[1][2], modelMatrix.m[2][2]};
+    player->fwd = normalise({modelMatrix.m[0][2], modelMatrix.m[1][2], modelMatrix.m[2][2]});
     return modelMatrix;
 }

@@ -306,6 +306,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     wndProcData.windowDidResize = true; // To force initial perspectiveMat calculation
 
     Player player = playerInit({0,0,0}, normalise({0,0,1}));
+    ColliderData playerColliderData = cubeColliderData;
 
     const int NUM_CUBES = 5;
     vec3 cubePositions[NUM_CUBES] = {
@@ -324,8 +325,14 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     };
 
     mat4 cubeModelMats[NUM_CUBES];
-    for(int i=0; i<NUM_CUBES; ++i)
+    ColliderData cubeColliderDatas[NUM_CUBES];
+    for(int i=0; i<NUM_CUBES; ++i) {
         cubeModelMats[i] = scaleMat(cubeScales[i]) * translationMat(cubePositions[i]);
+        mat4 invModelMat = translationMat(-cubePositions[i]) * scaleMat(1/cubeScales[i]);
+        cubeColliderDatas[i] = cubeColliderData;
+        cubeColliderDatas[i].modelMatrix = cubeModelMats[i];
+        cubeColliderDatas[i].normalMatrix = transpose(invModelMat);
+    }
         
     float timeStepMultiplier = 1.f;
 
@@ -340,9 +347,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             QueryPerformanceCounter(&perfCount);
 
             currentTimeInSeconds = (double)(perfCount.QuadPart - startPerfCount) / (double)perfCounterFrequency;
-            dt = (float)(currentTimeInSeconds - previousTimeInSeconds);
-            if(dt > (1.f / 60.f))
-                dt = (1.f / 60.f);
+            dt = CLAMP_BELOW((float)(currentTimeInSeconds - previousTimeInSeconds), 1.f/60.f);
         }
 
         keysUpdateWasDownState(wndProcData.keys, KEY_COUNT);
@@ -407,6 +412,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier),
             viewMat = cameraUpdateFollowPlayer(&camera, player.pos);
         }
+        
+        playerColliderData.modelMatrix = playerModelMat;
+        playerColliderData.normalMatrix = calculateNormalMatrix(player);
+
+        // Collision Detection
+        // TODO
 
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
 

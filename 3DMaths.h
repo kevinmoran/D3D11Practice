@@ -56,6 +56,10 @@ inline vec3 operator* (vec3 v, float f) {
     return {v.x*f, v.y*f, v.z*f};
 }
 
+inline vec3 operator/ (float f, vec3 v) {
+    return {f/v.x, f/v.y, f/v.z};
+}
+
 inline vec3 normalise(vec3 v) {
     return v * (1.f / length(v));
 }
@@ -193,5 +197,14 @@ inline mat4 operator* (mat4 a, mat4 b) {
         dot(a.row(1), b.cols[3]),
         dot(a.row(2), b.cols[3]),
         dot(a.row(3), b.cols[3])
+    };
+}
+
+inline mat4 transpose(mat4 m) {
+    return {
+        m.m[0][0], m.m[1][0], m.m[2][0], m.m[3][0], 
+        m.m[0][1], m.m[1][1], m.m[2][1], m.m[3][1], 
+        m.m[0][2], m.m[1][2], m.m[2][2], m.m[3][2], 
+        m.m[0][3], m.m[1][3], m.m[2][3], m.m[3][3]
     };
 }
