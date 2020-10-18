@@ -7,6 +7,15 @@
 #define CLAMP_ABOVE(x, lowerbound) ((x) > (lowerbound) ? (x) : (lowerbound))
 #define CLAMP_BETWEEN(x,lo,hi) (CLAMP_BELOW(CLAMP_ABOVE((x),(lo)),(hi)))
 
+inline bool areAlmostEqual(float a, float b) {
+    return (fabsf(a-b) < 0.00001f);
+}
+
+struct vec2
+{
+    float x, y;
+};
+
 struct vec3
 {
     float x, y, z;
@@ -55,6 +64,14 @@ inline vec3 normaliseOrZero(vec3 v) {
     float l = length(v);
     if(l < 0.00001f) return {};
     return v * (1.f / l);
+}
+
+inline bool areAlmostEqual(vec2 a, vec2 b) {
+    return areAlmostEqual(a.x, b.x) && areAlmostEqual(a.y, b.y);
+}
+
+inline bool areAlmostEqual(vec3 a, vec3 b) {
+    return areAlmostEqual(a.x, b.x) && areAlmostEqual(a.y, b.y) && areAlmostEqual(a.z, b.z);
 }
 
 inline vec3 cross(vec3 a, vec3 b) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "3DMaths.h"
 
 // NOTE: This is in no way a complete .obj parser.
 // I just did the minimum required to load simple .obj files,
@@ -17,9 +18,9 @@
 #pragma pack(push, 1)
 struct VertexData
 {
-    float pos[3];
-    float uv[2];
-    float norm[3];
+    vec3 pos;
+    vec2 uv;
+    vec3 norm;
 };
 #pragma pack(pop)
 

@@ -136,11 +136,6 @@ static int fixupIndex(int index, size_t size)
     return (index >= 0) ? index - 1 : int(size) + index;
 }
 
-static bool areAlmostEqual(float a, float b)
-{
-    return (fabsf(a-b) < 0.00001f);
-}
-
 static void growArray(void** array, size_t* capacity, size_t itemSize)
 {
     *capacity = (*capacity == 0) ? 32 : (*capacity + *capacity / 2);
@@ -244,9 +239,9 @@ LoadedObj loadObj(const char* filename)
                 vnIdx = fixupIndex(vnIdx, numVertexNormals);
                 
                 VertexData newVert = {
-                    vpBuffer[3*vpIdx], vpBuffer[3*vpIdx+1], vpBuffer[3*vpIdx+2],
-                    vtBuffer[2*vtIdx], vtBuffer[2*vtIdx+1],
-                    vnBuffer[3*vnIdx], vnBuffer[3*vnIdx+1], vnBuffer[3*vnIdx+2],
+                    { vpBuffer[3*vpIdx], vpBuffer[3*vpIdx+1], vpBuffer[3*vpIdx+2] },
+                    { vtBuffer[2*vtIdx], vtBuffer[2*vtIdx+1] },
+                    { vnBuffer[3*vnIdx], vnBuffer[3*vnIdx+1], vnBuffer[3*vnIdx+2] },
                 };
 
                 // Search vertexBuffer for matching vertex
@@ -254,20 +249,13 @@ LoadedObj loadObj(const char* filename)
                 for(index=0; index<vertexBufferSize; ++index) 
                 {
                     VertexData* v = outVertexBuffer + index;
-                    bool posMatch = areAlmostEqual(v->pos[0], newVert.pos[0])
-                                 && areAlmostEqual(v->pos[1], newVert.pos[1])
-                                 && areAlmostEqual(v->pos[2], newVert.pos[2]);
-                    bool uvMatch = areAlmostEqual(v->uv[0], newVert.uv[0])
-                                && areAlmostEqual(v->uv[1], newVert.uv[1]);
-                    bool normMatch = areAlmostEqual(v->norm[0], newVert.norm[0])
-                                  && areAlmostEqual(v->norm[1], newVert.norm[1])
-                                  && areAlmostEqual(v->norm[2], newVert.norm[2]);
+                    bool posMatch = areAlmostEqual(v->pos, newVert.pos);
+                    bool uvMatch = areAlmostEqual(v->uv, newVert.uv);
+                    bool normMatch = areAlmostEqual(v->norm, newVert.norm);
                     if(posMatch && uvMatch)
                     {
                         if(normMatch || smoothNormals){
-                            v->norm[0] += newVert.norm[0];
-                            v->norm[1] += newVert.norm[1];
-                            v->norm[2] += newVert.norm[2];
+                            v->norm += newVert.norm;
                             break;
                         }
                     }
@@ -301,13 +289,7 @@ LoadedObj loadObj(const char* filename)
     // Normalise the normals
     for(uint32_t i=0; i<vertexBufferSize; ++i){
         VertexData* v = outVertexBuffer + i;
-        float normLength = sqrtf(v->norm[0]*v->norm[0] 
-                         + v->norm[1]*v->norm[1]
-                         + v->norm[2]*v->norm[2]);
-        float invNormLength = 1.f / normLength;
-        v->norm[0] *= invNormLength;
-        v->norm[1] *= invNormLength;
-        v->norm[2] *= invNormLength;
+        v->norm = normalise(v->norm);
     }
 
     free(vpBuffer);
