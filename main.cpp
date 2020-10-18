@@ -18,6 +18,7 @@
 #include "ObjLoading.h"
 #include "Camera.h"
 #include "Player.h"
+#include "Collision.h"
 
 #define WINDOW_TITLE L"D3D11"
 
@@ -240,6 +241,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     
     Mesh playerMesh = {};
     d3d11CreateMesh(d3d11Data.device, cubeObj, &playerMesh);
+
+    ColliderData cubeColliderData = createColliderData(cubeObj);
     
     freeLoadedObj(cubeObj);
 
