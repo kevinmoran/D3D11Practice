@@ -11,6 +11,9 @@ inline bool areAlmostEqual(float a, float b) {
     return (fabsf(a-b) < 0.00001f);
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4201) // Anonymous struct warning
+
 struct vec2
 {
     float x, y;
@@ -21,9 +24,12 @@ struct vec3
     float x, y, z;
 };
 
-struct vec4
+union vec4
 {
-    float x, y, z, w;
+    struct {
+        float x, y, z, w;
+    };
+    vec3 xyz;
 };
 
 union mat4
@@ -35,6 +41,7 @@ union mat4
         return { m[0][i], m[1][i], m[2][i], m[3][i] };
     }
 };
+#pragma warning(pop)
 
 inline float degreesToRadians(float degs) {
     return degs * (PI32 / 180.0f);
@@ -197,6 +204,15 @@ inline mat4 operator* (mat4 a, mat4 b) {
         dot(a.row(1), b.cols[3]),
         dot(a.row(2), b.cols[3]),
         dot(a.row(3), b.cols[3])
+    };
+}
+
+inline vec4 operator* (vec4 v, mat4 m) {
+    return {
+        dot(v, m.cols[0]),
+        dot(v, m.cols[1]),
+        dot(v, m.cols[2]),
+        dot(v, m.cols[3])
     };
 }
 

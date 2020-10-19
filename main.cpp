@@ -12,8 +12,8 @@
 #undef STB_IMAGE_IMPLEMENTATION
 
 #include "types.h"
-#include "D3D11Helpers.h"
 #include "3DMaths.h"
+#include "D3D11Helpers.h"
 #include "Input.h"
 #include "ObjLoading.h"
 #include "Camera.h"
@@ -310,7 +310,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
     const int NUM_CUBES = 5;
     vec3 cubePositions[NUM_CUBES] = {
-        {8,0,-6},
+        {4,0,0},
         {-1,2,-5},
         {3,1,-8},
         {-0.5,0.2,6},
@@ -416,8 +416,17 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         playerColliderData.modelMatrix = playerModelMat;
         playerColliderData.normalMatrix = calculateNormalMatrix(player);
 
+        vec4 cubeTintColours[NUM_CUBES] = {};
         // Collision Detection
-        // TODO
+        for(u32 i=0; i<NUM_CUBES; ++i)
+        {
+            if(isColliding(playerColliderData, cubeColliderDatas[i])){
+                cubeTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
+            }
+            else {
+                cubeTintColours[i] = {1,1,1,1};
+            }
+        }
 
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
 
@@ -450,8 +459,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &playerMesh.vertexBuffer, &playerMesh.stride, &playerMesh.offset);
             d3d11Data.deviceContext->IASetIndexBuffer(playerMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-            PerObjectVSConstants vsConstants = { playerModelMat * viewMat * perspectiveMat };
+            PerObjectVSConstants vsConstants = { playerModelMat * viewPerspectiveMat };
             d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
+
             PerObjectPSConstants psConstants = { {0.8f, 0.1f, 0.3f, 1.0f} };
             d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
 
@@ -461,11 +471,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &cubeMesh.vertexBuffer, &cubeMesh.stride, &cubeMesh.offset);
         d3d11Data.deviceContext->IASetIndexBuffer(cubeMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
         
-        PerObjectPSConstants psConstants = { {1.f, 1.f, 1.f, 1.f} };
-        d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
         for(int i=0; i<NUM_CUBES; ++i) {
-            PerObjectVSConstants vsConstants = { cubeModelMats[i] * viewMat * perspectiveMat};
+            PerObjectVSConstants vsConstants = { cubeModelMats[i] * viewPerspectiveMat};
             d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
+        
+            PerObjectPSConstants psConstants = { cubeTintColours[i] };
+            d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
 
             d3d11Data.deviceContext->DrawIndexed(cubeMesh.numIndices, 0, 0);
         }

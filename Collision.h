@@ -6,19 +6,19 @@
 
 struct Plane
 {
-    vec3 pos;
-    vec3 normal;
+    vec4 point;
+    vec4 normal; // TODO: could this be a vec3?
 };
 
 struct ColliderData
 {
     u32 numVertices;
-    vec3* vertices;
+    vec4* vertices;
     u32 numPlanes;
     Plane* planes;
 
     mat4 modelMatrix;
-    mat4 normalMatrix;
+    mat4 normalMatrix; // TODO: could this be a mat3?
 };
 
 ColliderData createColliderData(const LoadedObj &obj)
@@ -26,26 +26,69 @@ ColliderData createColliderData(const LoadedObj &obj)
     ColliderData result = {};
 
     result.numVertices = obj.numVertices;
-    result.vertices = (vec3*)malloc(result.numVertices * sizeof(vec3));
+    result.vertices = (vec4*)malloc(result.numVertices * sizeof(vec4));
 
-    vec3* currentVertex = result.vertices;
+    vec4* destVertex = result.vertices;
     for(u32 i=0; i<obj.numVertices; ++i) {
-        *currentVertex++ = obj.vertexBuffer[i].pos;
+        *destVertex++ = {
+            obj.vertexBuffer[i].pos.x,
+            obj.vertexBuffer[i].pos.y,
+            obj.vertexBuffer[i].pos.z, 
+            1.f};
     }
 
     result.numPlanes = obj.numIndices / 3;
     result.planes = (Plane*)malloc(result.numPlanes * sizeof(Plane));
 
-    Plane* currentPlane = result.planes;
+    Plane* destPlane = result.planes;
     for(u32 i=0; i<obj.numIndices; i+=3) {
         vec3 a = obj.vertexBuffer[obj.indexBuffer[i]].pos;
         vec3 b = obj.vertexBuffer[obj.indexBuffer[i+1]].pos;
         vec3 c = obj.vertexBuffer[obj.indexBuffer[i+2]].pos;
+        vec3 n = cross(b-a, c-a);
 
-        currentPlane->pos = a;
-        currentPlane->normal = cross(b-a, c-a);
-        ++currentPlane;
+        destPlane->point = {a.x, a.y, a.z, 1.f};
+        destPlane->normal = {n.x, n.y, n.z, 0.f};
+        ++destPlane;
     }
 
     return result;
+}
+
+bool hasSeparatingAxis(const ColliderData &a, const ColliderData &b)
+{
+    for(u32 i=0; i<b.numPlanes; ++i)
+    {
+        Plane plane = {
+            b.planes[i].point * b.modelMatrix,
+            b.planes[i].normal * b.normalMatrix
+        };
+
+        bool allVerticesAreInFrontOfPlane = true;
+        for(u32 j=0; j<a.numVertices; ++j)
+        {
+            vec4 vertex = a.vertices[j] * a.modelMatrix;
+            vec3 planeToVertexVec = vertex.xyz - plane.point.xyz;
+            float distanceToVertex = dot(planeToVertexVec, plane.normal.xyz);
+            if(distanceToVertex <= 0)
+            {
+                allVerticesAreInFrontOfPlane = false;
+                break;
+            }
+        }
+        if(allVerticesAreInFrontOfPlane)
+            return true;
+    }
+
+    return false;
+}
+
+bool isColliding(const ColliderData &a, const ColliderData &b)
+{
+    if(hasSeparatingAxis(a, b))
+        return false;
+    if(hasSeparatingAxis(b, a))
+        return false;
+
+    return true;
 }
