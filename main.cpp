@@ -328,7 +328,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     ColliderData cubeColliderDatas[NUM_CUBES];
     for(int i=0; i<NUM_CUBES; ++i) {
         cubeModelMats[i] = scaleMat(cubeScales[i]) * translationMat(cubePositions[i]);
-        mat4 invModelMat = translationMat(-cubePositions[i]) * scaleMat(1/cubeScales[i]);
+        mat3 invModelMat = scaleMat3(1/cubeScales[i]);
         cubeColliderDatas[i] = cubeColliderData;
         cubeColliderDatas[i].modelMatrix = cubeModelMats[i];
         cubeColliderDatas[i].normalMatrix = transpose(invModelMat);

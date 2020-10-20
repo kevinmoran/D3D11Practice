@@ -19,6 +19,6 @@ inline mat4 calculateModelMatrix(Player player) {
     return scaleMat({1,1,1}) * rotateYMat(player.yRotation) * translationMat(player.pos);
 }
 
-inline mat4 calculateNormalMatrix(Player player) {
-    return transpose(translationMat(-player.pos) * rotateYMat(-player.yRotation) * scaleMat(1/vec3{1,1,1}));
+inline mat3 calculateNormalMatrix(Player player) {
+    return transpose(rotateYMat3(-player.yRotation) * scaleMat3(1/vec3{1,1,1}));
 }

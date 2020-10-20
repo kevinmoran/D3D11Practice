@@ -7,7 +7,7 @@
 struct Plane
 {
     vec4 point;
-    vec4 normal; // TODO: could this be a vec3?
+    vec3 normal;
 };
 
 struct ColliderData
@@ -18,7 +18,7 @@ struct ColliderData
     Plane* planes;
 
     mat4 modelMatrix;
-    mat4 normalMatrix; // TODO: could this be a mat3?
+    mat3 normalMatrix;
 };
 
 ColliderData createColliderData(const LoadedObj &obj)
@@ -48,7 +48,7 @@ ColliderData createColliderData(const LoadedObj &obj)
         vec3 n = cross(b-a, c-a);
 
         destPlane->point = {a.x, a.y, a.z, 1.f};
-        destPlane->normal = {n.x, n.y, n.z, 0.f};
+        destPlane->normal = n;
         ++destPlane;
     }
 
@@ -61,7 +61,7 @@ bool hasSeparatingAxis(const ColliderData &a, const ColliderData &b)
     {
         Plane plane = {
             b.planes[i].point * b.modelMatrix,
-            b.planes[i].normal * b.normalMatrix
+            normalise(b.planes[i].normal * b.normalMatrix)
         };
 
         bool allVerticesAreInFrontOfPlane = true;
@@ -69,7 +69,7 @@ bool hasSeparatingAxis(const ColliderData &a, const ColliderData &b)
         {
             vec4 vertex = a.vertices[j] * a.modelMatrix;
             vec3 planeToVertexVec = vertex.xyz - plane.point.xyz;
-            float distanceToVertex = dot(planeToVertexVec, plane.normal.xyz);
+            float distanceToVertex = dot(planeToVertexVec, plane.normal);
             if(distanceToVertex <= 0)
             {
                 allVerticesAreInFrontOfPlane = false;

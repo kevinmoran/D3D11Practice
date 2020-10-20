@@ -41,6 +41,17 @@ union mat4
         return { m[0][i], m[1][i], m[2][i], m[3][i] };
     }
 };
+
+union mat3
+{
+    // Note: mat3 is used as a 3x3 matrix but padded to be 3x4 for alignment.
+    float m[3][4];
+    vec4 cols[3];
+
+    inline vec3 row(int i) { // Returns i-th row of matrix
+        return { m[0][i], m[1][i], m[2][i] };
+    }
+};
 #pragma warning(pop)
 
 inline float degreesToRadians(float degs) {
@@ -124,6 +135,57 @@ inline vec3 operator+ (vec3 a, vec3 b) {
 
 inline vec3 operator- (vec3 a, vec3 b) {
     return {a.x-b.x, a.y-b.y, a.z-b.z};
+}
+
+inline mat3 scaleMat3(vec3 scale) {
+    return {
+        scale.x, 0, 0, 0,
+        0, scale.y, 0, 0,
+        0, 0, scale.z, 0
+    };
+}
+
+inline mat3 rotateYMat3(float rad) {
+    float sinTheta = sinf(rad);
+    float cosTheta = cosf(rad);
+    return {
+        cosTheta, 0, sinTheta, 0,
+        0, 1, 0, 0,
+        -sinTheta, 0, cosTheta, 0
+    };
+}
+
+inline mat3 operator* (mat3 a, mat3 b) {
+    return {
+        dot(a.row(0), b.cols[0].xyz),
+        dot(a.row(1), b.cols[0].xyz),
+        dot(a.row(2), b.cols[0].xyz),
+        0,
+        dot(a.row(0), b.cols[1].xyz),
+        dot(a.row(1), b.cols[1].xyz),
+        dot(a.row(2), b.cols[1].xyz),
+        0,
+        dot(a.row(0), b.cols[2].xyz),
+        dot(a.row(1), b.cols[2].xyz),
+        dot(a.row(2), b.cols[2].xyz),
+        0
+    };
+}
+
+inline vec3 operator* (vec3 v, mat3 m) {
+    return {
+        dot(v, m.cols[0].xyz),
+        dot(v, m.cols[1].xyz),
+        dot(v, m.cols[2].xyz)
+    };
+}
+
+inline mat3 transpose(mat3 m) {
+    return {
+        m.m[0][0], m.m[1][0], m.m[2][0], 0, 
+        m.m[0][1], m.m[1][1], m.m[2][1], 0, 
+        m.m[0][2], m.m[1][2], m.m[2][2], 0,
+    };
 }
 
 inline mat4 scaleMat(vec3 scale) {
