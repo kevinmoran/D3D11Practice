@@ -55,8 +55,18 @@ ColliderData createColliderData(const LoadedObj &obj)
     return result;
 }
 
-bool hasSeparatingAxis(const ColliderData &a, const ColliderData &b)
+struct SATResult
 {
+    bool isColliding;
+    float minDistance;
+    vec3 normal;
+};
+
+SATResult separatingAxisTest(const ColliderData &a, const ColliderData &b)
+{
+    SATResult result = {
+        true, 1E+37, 0xFFFFFFFF
+    };
     for(u32 i=0; i<b.numPlanes; ++i)
     {
         Plane plane = {
@@ -64,31 +74,43 @@ bool hasSeparatingAxis(const ColliderData &a, const ColliderData &b)
             normalise(b.planes[i].normal * b.normalMatrix)
         };
 
-        bool allVerticesAreInFrontOfPlane = true;
+        float distanceToCurrentPlane = 1E+37;
+
         for(u32 j=0; j<a.numVertices; ++j)
         {
             vec4 vertex = a.vertices[j] * a.modelMatrix;
             vec3 planeToVertexVec = vertex.xyz - plane.point.xyz;
-            float distanceToVertex = dot(planeToVertexVec, plane.normal);
-            if(distanceToVertex <= 0)
+            float dist = dot(planeToVertexVec, plane.normal);
+            if(dist < distanceToCurrentPlane)
             {
-                allVerticesAreInFrontOfPlane = false;
-                break;
+                distanceToCurrentPlane = dist;
             }
         }
-        if(allVerticesAreInFrontOfPlane)
-            return true;
-    }
 
-    return false;
+        if(distanceToCurrentPlane > 0) {
+            result.isColliding = false;
+            break;
+        }
+        else if(fabsf(distanceToCurrentPlane) < fabsf(result.minDistance)) {
+            result.minDistance = distanceToCurrentPlane;
+            result.normal = plane.normal;
+        }
+
+    }
+    return result;
 }
 
-bool isColliding(const ColliderData &a, const ColliderData &b)
+SATResult checkCollision(const ColliderData &a, const ColliderData &b)
 {
-    if(hasSeparatingAxis(a, b))
-        return false;
-    if(hasSeparatingAxis(b, a))
-        return false;
+    SATResult resultA = separatingAxisTest(a, b);
+    if(!resultA.isColliding)
+        return resultA;
+    SATResult resultB = separatingAxisTest(b, a);
+    if(!resultB.isColliding)
+        return resultB;
 
-    return true;
+    if(resultA.minDistance < resultB.minDistance)
+        return resultA;
+    else
+        return resultB;
 }

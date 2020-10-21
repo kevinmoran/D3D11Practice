@@ -401,16 +401,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         if(wndProcData.keys[KEY_PLUS].wentDown())
             timeStepMultiplier = CLAMP_BELOW(timeStepMultiplier*2.f, 2.f);
 
-        mat4 viewMat;
         mat4 playerModelMat;
-
         if(freeCam) {
             playerModelMat = calculateModelMatrix(player);
-            viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt*timeStepMultiplier);
         }
         else {
-            playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier),
-            viewMat = cameraUpdateFollowPlayer(&camera, player.pos);
+            playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier);
         }
         
         playerColliderData.modelMatrix = playerModelMat;
@@ -420,12 +416,23 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         // Collision Detection
         for(u32 i=0; i<NUM_CUBES; ++i)
         {
-            if(isColliding(playerColliderData, cubeColliderDatas[i])){
+            SATResult result = checkCollision(playerColliderData, cubeColliderDatas[i]);
+            if(result.isColliding){
                 cubeTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
+                player.pos += result.normal * result.minDistance;
             }
             else {
                 cubeTintColours[i] = {1,1,1,1};
             }
+        }
+        playerModelMat = calculateModelMatrix(player);
+
+        mat4 viewMat;
+        if(freeCam) {
+            viewMat = cameraUpdateFreeCam(&camera, wndProcData.keys, dt*timeStepMultiplier);
+        }
+        else {
+            viewMat = cameraUpdateFollowPlayer(&camera, player.pos);
         }
 
         mat4 viewPerspectiveMat = viewMat * perspectiveMat;
