@@ -256,44 +256,51 @@ Mesh d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj)
 
 Texture d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, const char* fileName)
 {
-    Texture texture;
-
-    // Load Image
     int texForceNumChannels = 4;
-    unsigned char* textureBytes = stbi_load(fileName, &texture.width, &texture.height, &texture.numChannels, texForceNumChannels);
+    int width, height, numChannels;
+    unsigned char* textureBytes = stbi_load(fileName, &width, &height, &numChannels, texForceNumChannels);
     assert(textureBytes);
-    texture.bytesPerRow = 4 * texture.width;
 
-    // Create Texture
-    {
-        D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width              = texture.width;
-        textureDesc.Height             = texture.height;
-        textureDesc.MipLevels          = 0;
-        textureDesc.ArraySize          = 1;
-        textureDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        textureDesc.SampleDesc.Count   = 1;
-        textureDesc.Usage              = D3D11_USAGE_DEFAULT;
-        textureDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-        textureDesc.MiscFlags          = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-
-        ID3D11Texture2D* d3dTexture;
-        device->CreateTexture2D(&textureDesc, NULL, &d3dTexture);
-
-        deviceContext->UpdateSubresource(d3dTexture, 0, NULL, textureBytes, texture.bytesPerRow, 0);
-
-        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        srvDesc.Format = textureDesc.Format;
-        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = (UINT)-1;
-
-        device->CreateShaderResourceView(d3dTexture, &srvDesc, &texture.d3dShaderResourceView);
-        d3dTexture->Release();
-
-        deviceContext->GenerateMips(texture.d3dShaderResourceView);
-    }
-
+    Texture texture = d3d11CreateTexture(device, deviceContext, width, height, texForceNumChannels, textureBytes);
+   
     free(textureBytes);
+    return texture;
+}
+
+Texture d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, UINT width, UINT height, int numChannels, unsigned char* bytes)
+{
+    Texture texture;
+    texture.width = width;
+    texture.height = height;
+    texture.numChannels = numChannels;
+    texture.bytesPerRow = numChannels * width;
+
+    D3D11_TEXTURE2D_DESC textureDesc = {};
+    textureDesc.Width              = texture.width;
+    textureDesc.Height             = texture.height;
+    textureDesc.MipLevels          = 0;
+    textureDesc.ArraySize          = 1;
+    textureDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    textureDesc.SampleDesc.Count   = 1;
+    textureDesc.Usage              = D3D11_USAGE_DEFAULT;
+    textureDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    textureDesc.MiscFlags          = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+    ID3D11Texture2D* d3dTexture;
+    device->CreateTexture2D(&textureDesc, NULL, &d3dTexture);
+
+    deviceContext->UpdateSubresource(d3dTexture, 0, NULL, bytes, texture.bytesPerRow, 0);
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = textureDesc.Format;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = (UINT)-1;
+
+    device->CreateShaderResourceView(d3dTexture, &srvDesc, &texture.d3dShaderResourceView);
+    d3dTexture->Release();
+
+    deviceContext->GenerateMips(texture.d3dShaderResourceView);
+
     return texture;
 }
 
