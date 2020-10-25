@@ -231,20 +231,16 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     }
 
     // Create Pixel Shader
-    ID3D11PixelShader* pixelShader;
-    d3d11CreatePixelShader(d3d11Data.device, L"shaders.hlsl", "ps_main", &pixelShader);
+    ID3D11PixelShader* pixelShader = d3d11CreatePixelShader(d3d11Data.device, L"shaders.hlsl", "ps_main");
 
     LoadedObj cubeObj = loadObj("cube.obj");
     LoadedObj sphereObj = loadObj("sphere.obj");
 
-    Mesh cubeMesh = {};
-    d3d11CreateMesh(d3d11Data.device, cubeObj, &cubeMesh);
+    Mesh cubeMesh = d3d11CreateMesh(d3d11Data.device, cubeObj);
     
-    Mesh playerMesh = {};
-    d3d11CreateMesh(d3d11Data.device, cubeObj, &playerMesh);
+    Mesh playerMesh = d3d11CreateMesh(d3d11Data.device, cubeObj);
     
-    Mesh sphereMesh = {};
-    d3d11CreateMesh(d3d11Data.device, sphereObj, &sphereMesh);
+    Mesh sphereMesh = d3d11CreateMesh(d3d11Data.device, sphereObj);
     
     freeLoadedObj(sphereObj);
 
@@ -252,8 +248,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     
     freeLoadedObj(cubeObj);
 
-    Texture cubeTexture = {};
-    d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "test.png", &cubeTexture);
+    Texture cubeTexture = d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "test.png");
 
     // Create Sampler State
     ID3D11SamplerState* samplerState;
@@ -278,10 +273,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         vec4 tintColour;
     };
 
-    ID3D11Buffer* perObjectVSConstantBuffer;
-    d3d11CreateConstantBuffer(d3d11Data.device, sizeof(PerObjectVSConstants), & perObjectVSConstantBuffer);
-    ID3D11Buffer* perObjectPSConstantBuffer;
-    d3d11CreateConstantBuffer(d3d11Data.device, sizeof(PerObjectPSConstants), & perObjectPSConstantBuffer);
+    ID3D11Buffer* perObjectVSConstantBuffer = d3d11CreateConstantBuffer(d3d11Data.device, sizeof(PerObjectVSConstants));
+    ID3D11Buffer* perObjectPSConstantBuffer = d3d11CreateConstantBuffer(d3d11Data.device, sizeof(PerObjectPSConstants));
 
     ID3D11RasterizerState* rasterizerState;
     {

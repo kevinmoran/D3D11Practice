@@ -209,23 +209,27 @@ bool d3d11CreateVertexShaderAndInputLayout(ID3D11Device1* device, LPCWSTR fileNa
     return true;
 }
 
-bool d3d11CreatePixelShader(ID3D11Device1* device, LPCWSTR fileName, LPCSTR shaderEntryPoint, ID3D11PixelShader** pixelShader)
+ID3D11PixelShader* d3d11CreatePixelShader(ID3D11Device1* device, LPCWSTR fileName, LPCSTR shaderEntryPoint)
 {
+    ID3D11PixelShader* pixelShader;
     ID3DBlob* shaderByteCode;
     _d3d11CompileShader(fileName, shaderEntryPoint, &shaderByteCode, ShaderType_PIXEL);
 
-    HRESULT hResult = device->CreatePixelShader(shaderByteCode->GetBufferPointer(), shaderByteCode->GetBufferSize(), nullptr, pixelShader);
+    HRESULT hResult = device->CreatePixelShader(shaderByteCode->GetBufferPointer(), shaderByteCode->GetBufferSize(), nullptr, &pixelShader);
     assert(SUCCEEDED(hResult));
     shaderByteCode->Release();
-    return true;
+
+    return pixelShader;
 }
 
-bool d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj, Mesh* mesh)
+Mesh d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj)
 {
-    mesh->stride = sizeof(VertexData);
-    mesh->numVertices = obj.numVertices;
-    mesh->offset = 0;
-    mesh->numIndices = obj.numIndices;
+    Mesh mesh;
+
+    mesh.stride = sizeof(VertexData);
+    mesh.numVertices = obj.numVertices;
+    mesh.offset = 0;
+    mesh.numIndices = obj.numIndices;
 
     D3D11_BUFFER_DESC vertexBufferDesc = {};
     vertexBufferDesc.ByteWidth = obj.numVertices * sizeof(VertexData);
@@ -234,7 +238,7 @@ bool d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj, Mesh* mesh)
 
     D3D11_SUBRESOURCE_DATA vertexSubresourceData = { obj.vertexBuffer };
 
-    HRESULT hResult = device->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &mesh->vertexBuffer);
+    HRESULT hResult = device->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &mesh.vertexBuffer);
     assert(SUCCEEDED(hResult));
 
     D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -244,25 +248,27 @@ bool d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj, Mesh* mesh)
 
     D3D11_SUBRESOURCE_DATA indexSubresourceData = { obj.indexBuffer };
 
-    hResult = device->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &mesh->indexBuffer);
+    hResult = device->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &mesh.indexBuffer);
     assert(SUCCEEDED(hResult));
 
-    return true;
+    return mesh;
 }
 
-bool d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, const char* fileName, Texture* texture)
+Texture d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, const char* fileName)
 {
+    Texture texture;
+
     // Load Image
     int texForceNumChannels = 4;
-    unsigned char* textureBytes = stbi_load(fileName, &texture->width, &texture->height, &texture->numChannels, texForceNumChannels);
+    unsigned char* textureBytes = stbi_load(fileName, &texture.width, &texture.height, &texture.numChannels, texForceNumChannels);
     assert(textureBytes);
-    texture->bytesPerRow = 4 * texture->width;
+    texture.bytesPerRow = 4 * texture.width;
 
     // Create Texture
     {
         D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width              = texture->width;
-        textureDesc.Height             = texture->height;
+        textureDesc.Width              = texture.width;
+        textureDesc.Height             = texture.height;
         textureDesc.MipLevels          = 0;
         textureDesc.ArraySize          = 1;
         textureDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -274,25 +280,26 @@ bool d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceConte
         ID3D11Texture2D* d3dTexture;
         device->CreateTexture2D(&textureDesc, NULL, &d3dTexture);
 
-        deviceContext->UpdateSubresource(d3dTexture, 0, NULL, textureBytes, texture->bytesPerRow, 0);
+        deviceContext->UpdateSubresource(d3dTexture, 0, NULL, textureBytes, texture.bytesPerRow, 0);
 
         D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
         srvDesc.Format = textureDesc.Format;
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = (UINT)-1;
 
-        device->CreateShaderResourceView(d3dTexture, &srvDesc, &texture->d3dShaderResourceView);
+        device->CreateShaderResourceView(d3dTexture, &srvDesc, &texture.d3dShaderResourceView);
         d3dTexture->Release();
 
-        deviceContext->GenerateMips(texture->d3dShaderResourceView);
+        deviceContext->GenerateMips(texture.d3dShaderResourceView);
     }
 
     free(textureBytes);
-    return true;
+    return texture;
 }
 
-bool d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize, ID3D11Buffer** constantBuffer)
+ID3D11Buffer* d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize)
 {
+    ID3D11Buffer* constantBuffer;
     D3D11_BUFFER_DESC constantBufferDesc = {};
     // ByteWidth must be a multiple of 16, per the docs
     constantBufferDesc.ByteWidth = bufferSize + 0xf & 0xfffffff0;
@@ -300,9 +307,9 @@ bool d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize, ID3D11B
     constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-    HRESULT hResult = device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer);
+    HRESULT hResult = device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
     assert(SUCCEEDED(hResult));
-    return true;
+    return constantBuffer;
 }
 
 void d3d11OverwriteConstantBuffer(ID3D11DeviceContext1* deviceContext, ID3D11Buffer* constantBuffer, void* data, size_t dataSize)

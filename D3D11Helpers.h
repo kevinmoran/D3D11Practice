@@ -19,7 +19,7 @@ bool d3d11InitRenderTargetsAndDepthBuffer(D3D11Data* d3d11);
 
 bool d3d11CreateVertexShaderAndInputLayout(ID3D11Device1* device, LPCWSTR fileName, LPCSTR shaderEntryPoint, ID3D11VertexShader** vertexShader, D3D11_INPUT_ELEMENT_DESC inputElementDesc[], int numInputElements, ID3D11InputLayout** inputLayout);
 
-bool d3d11CreatePixelShader(ID3D11Device1* device, LPCWSTR fileName, LPCSTR shaderEntryPoint, ID3D11PixelShader** pixelShader);
+ID3D11PixelShader* d3d11CreatePixelShader(ID3D11Device1* device, LPCWSTR fileName, LPCSTR shaderEntryPoint);
 
 struct Mesh 
 {
@@ -32,7 +32,7 @@ struct Mesh
 };
 
 struct LoadedObj;
-bool d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj, Mesh* mesh);
+Mesh d3d11CreateMesh(ID3D11Device1* device, const LoadedObj &obj);
 
 struct Texture
 {
@@ -42,8 +42,7 @@ struct Texture
     int bytesPerRow;
 };
 
-bool d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, const char* fileName, Texture* texture);
+Texture d3d11CreateTexture(ID3D11Device1* device, ID3D11DeviceContext1* deviceContext, const char* fileName);
 
-bool d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize, ID3D11Buffer** constantBuffer);
-
+ID3D11Buffer* d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize);
 void d3d11OverwriteConstantBuffer(ID3D11DeviceContext1* deviceContext, ID3D11Buffer* constantBuffer, void* data, size_t dataSize);
