@@ -318,14 +318,14 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         {4,0,0},
         {-1,2,-5},
         {3,1,-8},
-        {-0.5,0.2,6},
+        {-2,0.2,7},
         {0,-1,0},
     };
     vec3 cubeScales[NUM_CUBES] = {
         {3,3,3},
         {1,2,5},
         {3,1,8},
-        {5,0.2,6},
+        {5,2,4},
         {20,0.5,20},
     };
 
@@ -444,7 +444,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             SATResult result = checkCollision(playerColliderData, cubeColliderDatas[i]);
             if(result.isColliding){
                 cubeTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
-                player.pos += result.normal * result.minDistance;
+                player.pos += result.normal * result.penetrationDistance;
             }
             else {
                 cubeTintColours[i] = {1,1,1,1};
@@ -456,7 +456,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             // SATResult result = checkCollision(playerColliderData, sphereColliderDatas[i]);
             // if(result.isColliding){
                 // cubeTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
-                // player.pos += result.normal * result.minDistance;
+                // player.pos += result.normal * result.penetrationDistance;
             // }
             // else 
             {

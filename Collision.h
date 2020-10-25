@@ -58,14 +58,15 @@ ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj)
 struct SATResult
 {
     bool isColliding;
-    float minDistance;
+    float penetrationDistance;
     vec3 normal;
 };
 
+// Check if any of the plane normals of `b` are a separating axis for the vertices of `a`
 SATResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderPolyhedron &b)
 {
     SATResult result = {
-        true, 1E+37, 0xFFFFFFFF
+        true, 1E+37, {}
     };
     for(u32 i=0; i<b.numPlanes; ++i)
     {
@@ -74,28 +75,30 @@ SATResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderPolyhedr
             normalise(b.planes[i].normal * b.normalMatrix)
         };
 
-        float distanceToCurrentPlane = 1E+37;
-
+        // Find how far the vertices of `a` are behind the current plane
+        float currentPenetrationDistance = -1E+37;
         for(u32 j=0; j<a.numVertices; ++j)
         {
             vec4 vertex = a.vertices[j] * a.modelMatrix;
-            vec3 planeToVertexVec = vertex.xyz - plane.point.xyz;
-            float dist = dot(planeToVertexVec, plane.normal);
-            if(dist < distanceToCurrentPlane)
-            {
-                distanceToCurrentPlane = dist;
+            vec3 vertexToPlaneVec = plane.point.xyz - vertex.xyz;
+            float dist = dot(vertexToPlaneVec, plane.normal);
+            if(dist > currentPenetrationDistance) {
+                currentPenetrationDistance = dist;
             }
         }
 
-        if(distanceToCurrentPlane > 0) {
+        // If all of a's vertices are in front of current plane,
+        // we have found a separating axis and there is no collision
+        if(currentPenetrationDistance < 0) {
             result.isColliding = false;
             break;
         }
-        else if(fabsf(distanceToCurrentPlane) < fabsf(result.minDistance)) {
-            result.minDistance = distanceToCurrentPlane;
+        // Keep track of which plane gives the smallest penetration 
+        // so we can resolve the collision
+        else if(currentPenetrationDistance < result.penetrationDistance) {
+            result.penetrationDistance = currentPenetrationDistance;
             result.normal = plane.normal;
         }
-
     }
     return result;
 }
@@ -109,7 +112,7 @@ SATResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhedron &
     if(!resultB.isColliding)
         return resultB;
 
-    if(resultA.minDistance < resultB.minDistance)
+    if(resultA.penetrationDistance < resultB.penetrationDistance)
         return resultA;
     else
         return resultB;
