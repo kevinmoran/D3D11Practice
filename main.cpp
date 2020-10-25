@@ -244,7 +244,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     
     freeLoadedObj(sphereObj);
 
-    ColliderData cubeColliderData = createColliderData(cubeObj);
+    ColliderPolyhedron cubeColliderData = createColliderPolyhedron(cubeObj);
     
     freeLoadedObj(cubeObj);
 
@@ -311,7 +311,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     wndProcData.windowDidResize = true; // To force initial perspectiveMat calculation
 
     Player player = playerInit({0,0,0}, normalise({0,0,1}));
-    ColliderData playerColliderData = cubeColliderData;
+    ColliderPolyhedron playerColliderData = cubeColliderData;
 
     const int NUM_CUBES = 5;
     vec3 cubePositions[NUM_CUBES] = {
@@ -330,7 +330,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     };
 
     mat4 cubeModelMats[NUM_CUBES];
-    ColliderData cubeColliderDatas[NUM_CUBES];
+    ColliderPolyhedron cubeColliderDatas[NUM_CUBES];
     for(int i=0; i<NUM_CUBES; ++i) {
         cubeModelMats[i] = scaleMat(cubeScales[i]) * translationMat(cubePositions[i]);
         mat3 invModelMat = scaleMat3(1/cubeScales[i]);
@@ -356,7 +356,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     mat4 sphereModelMats[NUM_SPHERES];
     for(int i=0; i<NUM_SPHERES; ++i) {
         sphereModelMats[i] = scaleMat(sphereScales[i]) * translationMat(spherePositions[i]);
-        mat3 invModelMat = scaleMat3(1/sphereScales[i]);
     }
         
     float timeStepMultiplier = 1.f;

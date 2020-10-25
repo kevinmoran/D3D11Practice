@@ -10,7 +10,7 @@ struct Plane
     vec3 normal;
 };
 
-struct ColliderData
+struct ColliderPolyhedron
 {
     u32 numVertices;
     vec4* vertices;
@@ -21,9 +21,9 @@ struct ColliderData
     mat3 normalMatrix;
 };
 
-ColliderData createColliderData(const LoadedObj &obj)
+ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj)
 {
-    ColliderData result = {};
+    ColliderPolyhedron result = {};
 
     result.numVertices = obj.numVertices;
     result.vertices = (vec4*)malloc(result.numVertices * sizeof(vec4));
@@ -62,7 +62,7 @@ struct SATResult
     vec3 normal;
 };
 
-SATResult separatingAxisTest(const ColliderData &a, const ColliderData &b)
+SATResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderPolyhedron &b)
 {
     SATResult result = {
         true, 1E+37, 0xFFFFFFFF
@@ -100,7 +100,7 @@ SATResult separatingAxisTest(const ColliderData &a, const ColliderData &b)
     return result;
 }
 
-SATResult checkCollision(const ColliderData &a, const ColliderData &b)
+SATResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhedron &b)
 {
     SATResult resultA = separatingAxisTest(a, b);
     if(!resultA.isColliding)
