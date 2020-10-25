@@ -235,12 +235,18 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     d3d11CreatePixelShader(d3d11Data.device, L"shaders.hlsl", "ps_main", &pixelShader);
 
     LoadedObj cubeObj = loadObj("cube.obj");
+    LoadedObj sphereObj = loadObj("sphere.obj");
 
     Mesh cubeMesh = {};
     d3d11CreateMesh(d3d11Data.device, cubeObj, &cubeMesh);
     
     Mesh playerMesh = {};
     d3d11CreateMesh(d3d11Data.device, cubeObj, &playerMesh);
+    
+    Mesh sphereMesh = {};
+    d3d11CreateMesh(d3d11Data.device, sphereObj, &sphereMesh);
+    
+    freeLoadedObj(sphereObj);
 
     ColliderData cubeColliderData = createColliderData(cubeObj);
     
@@ -333,6 +339,26 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         cubeColliderDatas[i].modelMatrix = cubeModelMats[i];
         cubeColliderDatas[i].normalMatrix = transpose(invModelMat);
     }
+
+    const int NUM_SPHERES = 4;
+    vec3 spherePositions[NUM_SPHERES] = {
+        {-4,0,0},
+        {4,2,5},
+        {-6,1,-6},
+        {6,1,-6}
+    };
+    vec3 sphereScales[NUM_SPHERES] = {
+        {1,1,1},
+        {1,1,1},
+        {2,2,2},
+        {3,3,3}
+    };
+
+    mat4 sphereModelMats[NUM_SPHERES];
+    for(int i=0; i<NUM_SPHERES; ++i) {
+        sphereModelMats[i] = scaleMat(sphereScales[i]) * translationMat(spherePositions[i]);
+        mat3 invModelMat = scaleMat3(1/sphereScales[i]);
+    }
         
     float timeStepMultiplier = 1.f;
 
@@ -413,6 +439,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         playerColliderData.normalMatrix = calculateNormalMatrix(player);
 
         vec4 cubeTintColours[NUM_CUBES] = {};
+        vec4 sphereTintColours[NUM_SPHERES] = {};
         // Collision Detection
         for(u32 i=0; i<NUM_CUBES; ++i)
         {
@@ -423,6 +450,19 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             }
             else {
                 cubeTintColours[i] = {1,1,1,1};
+            }
+        }
+        for(u32 i=0; i<NUM_SPHERES; ++i)
+        {
+            // TODO
+            // SATResult result = checkCollision(playerColliderData, sphereColliderDatas[i]);
+            // if(result.isColliding){
+                // cubeTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
+                // player.pos += result.normal * result.minDistance;
+            // }
+            // else 
+            {
+                sphereTintColours[i] = {1,1,0,1};
             }
         }
         playerModelMat = calculateModelMatrix(player);
@@ -475,17 +515,34 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             d3d11Data.deviceContext->DrawIndexed(playerMesh.numIndices, 0, 0);
         }
 
-        d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &cubeMesh.vertexBuffer, &cubeMesh.stride, &cubeMesh.offset);
-        d3d11Data.deviceContext->IASetIndexBuffer(cubeMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
-        
-        for(int i=0; i<NUM_CUBES; ++i) {
-            PerObjectVSConstants vsConstants = { cubeModelMats[i] * viewPerspectiveMat};
-            d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
-        
-            PerObjectPSConstants psConstants = { cubeTintColours[i] };
-            d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
+        { // Draw cubes
+            d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &cubeMesh.vertexBuffer, &cubeMesh.stride, &cubeMesh.offset);
+            d3d11Data.deviceContext->IASetIndexBuffer(cubeMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+            
+            for(int i=0; i<NUM_CUBES; ++i) {
+                PerObjectVSConstants vsConstants = { cubeModelMats[i] * viewPerspectiveMat};
+                d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
+            
+                PerObjectPSConstants psConstants = { cubeTintColours[i] };
+                d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
 
-            d3d11Data.deviceContext->DrawIndexed(cubeMesh.numIndices, 0, 0);
+                d3d11Data.deviceContext->DrawIndexed(cubeMesh.numIndices, 0, 0);
+            }
+        }
+
+        { // Draw spheres
+            d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &sphereMesh.vertexBuffer, &sphereMesh.stride, &sphereMesh.offset);
+            d3d11Data.deviceContext->IASetIndexBuffer(sphereMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+            
+            for(int i=0; i<NUM_SPHERES; ++i) {
+                PerObjectVSConstants vsConstants = { sphereModelMats[i] * viewPerspectiveMat};
+                d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
+            
+                PerObjectPSConstants psConstants = { sphereTintColours[i] };
+                d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
+
+                d3d11Data.deviceContext->DrawIndexed(sphereMesh.numIndices, 0, 0);
+            }
         }
 
         d3d11Data.deviceContext->ResolveSubresource(d3d11Data.mainRenderTarget, 0, d3d11Data.msaaRenderTarget, 0, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB);
@@ -499,6 +556,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     perObjectVSConstantBuffer->Release();
     cubeTexture.d3dShaderResourceView->Release();
     samplerState->Release();
+    sphereMesh.indexBuffer->Release();
+    sphereMesh.vertexBuffer->Release();
     cubeMesh.indexBuffer->Release();
     cubeMesh.vertexBuffer->Release();
     playerMesh.indexBuffer->Release();
