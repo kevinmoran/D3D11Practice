@@ -250,6 +250,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
     Texture cubeTexture = d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "test.png");
 
+    Texture whiteTexture;
+    {
+        unsigned char pixel[4] = {255,255,255,255};
+        whiteTexture = d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, 1, 1, 4, pixel);
+    }
+
     // Create Sampler State
     ID3D11SamplerState* samplerState;
     {
@@ -526,6 +532,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         { // Draw spheres
             d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &sphereMesh.vertexBuffer, &sphereMesh.stride, &sphereMesh.offset);
             d3d11Data.deviceContext->IASetIndexBuffer(sphereMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+            
+            d3d11Data.deviceContext->PSSetShaderResources(0, 1, &whiteTexture.d3dShaderResourceView);
             
             for(int i=0; i<NUM_SPHERES; ++i) {
                 PerObjectVSConstants vsConstants = { sphereModelMats[i] * viewPerspectiveMat};
