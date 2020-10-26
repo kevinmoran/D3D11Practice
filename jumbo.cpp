@@ -5,6 +5,7 @@
 // See: https://onqtam.com/programming/2018-07-07-unity-builds/
 
 #include "main.cpp"
+#include "Collision.cpp"
 #include "Player.cpp"
 #include "Camera.cpp"
 #include "ObjLoading.cpp"
