@@ -56,8 +56,7 @@ static SATResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderP
         for(u32 j=0; j<a.numVertices; ++j)
         {
             vec4 vertex = a.vertices[j] * a.modelMatrix;
-            vec3 vertexToPlaneVec = plane.point.xyz - vertex.xyz;
-            float dist = dot(vertexToPlaneVec, plane.normal);
+            float dist = dot(plane.point.xyz - vertex.xyz, plane.normal);
             if(dist > currentPenetrationDistance) {
                 currentPenetrationDistance = dist;
             }
@@ -71,7 +70,7 @@ static SATResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderP
         }
         // Keep track of which plane gives the smallest penetration 
         // so we can resolve the collision
-        else if(currentPenetrationDistance < result.penetrationDistance) {
+        if(currentPenetrationDistance < result.penetrationDistance) {
             result.penetrationDistance = currentPenetrationDistance;
             result.normal = plane.normal;
         }
@@ -92,4 +91,35 @@ SATResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhedron &
         return resultA;
     else
         return resultB;
+}
+
+SATResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &sphere)
+{
+    SATResult result = {
+        true, 1E+37, {}
+    };
+    for(u32 i=0; i<poly.numPlanes; ++i)
+    {
+        Plane plane = {
+            poly.planes[i].point * poly.modelMatrix,
+            normalise(poly.planes[i].normal * poly.normalMatrix)
+        };
+        vec3 furthestPointOnSphere = sphere.pos - plane.normal*sphere.radius;
+        float currentPenetrationDistance = dot(plane.point.xyz - furthestPointOnSphere, plane.normal);
+        if(currentPenetrationDistance < 0) {
+            result.isColliding = false;
+            return result;
+        }
+        
+        // Keep track of which plane gives the smallest penetration 
+        // so we can resolve the collision
+        if(currentPenetrationDistance < result.penetrationDistance) {
+            result.penetrationDistance = currentPenetrationDistance;
+            result.normal = plane.normal;
+        }
+    }
+    // TODO: There are still some false positives with this test
+    // Try finding the closest edge to the sphere and use that vector
+    // as a separating axis
+    return result;
 }

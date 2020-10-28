@@ -188,6 +188,15 @@ inline mat3 transpose(mat3 m) {
     };
 }
 
+inline mat4 scaleMat(float scale) {
+    return {
+        scale, 0, 0, 0,
+        0, scale, 0, 0,
+        0, 0, scale, 0,
+        0, 0, 0, 1
+    };
+}
+
 inline mat4 scaleMat(vec3 scale) {
     return {
         scale.x, 0, 0, 0,

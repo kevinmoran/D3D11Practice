@@ -346,16 +346,18 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         {-6,1,-6},
         {6,1,-6}
     };
-    vec3 sphereScales[NUM_SPHERES] = {
-        {1,1,1},
-        {1,1,1},
-        {2,2,2},
-        {3,3,3}
+    float sphereScales[NUM_SPHERES] = {
+        1,
+        1,
+        2,
+        3
     };
 
     mat4 sphereModelMats[NUM_SPHERES];
+    ColliderSphere sphereColliders[NUM_SPHERES];
     for(int i=0; i<NUM_SPHERES; ++i) {
         sphereModelMats[i] = scaleMat(sphereScales[i]) * translationMat(spherePositions[i]);
+        sphereColliders[i] = { spherePositions[i], sphereScales[i] };
     }
         
     float timeStepMultiplier = 1.f;
@@ -452,13 +454,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         }
         for(u32 i=0; i<NUM_SPHERES; ++i)
         {
-            // TODO
-            // SATResult result = checkCollision(playerColliderData, sphereColliderDatas[i]);
-            // if(result.isColliding){
-                // cubeTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
+            SATResult result = checkCollision(playerColliderData, sphereColliders[i]);
+            if(result.isColliding){
+                sphereTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
                 // player.pos += result.normal * result.penetrationDistance;
-            // }
-            // else 
+            }
+            else 
             {
                 sphereTintColours[i] = {1,1,0,1};
             }

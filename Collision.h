@@ -20,6 +20,12 @@ struct ColliderPolyhedron
     mat3 normalMatrix;
 };
 
+struct ColliderSphere
+{
+    vec3 pos;
+    float radius;
+};
+
 struct LoadedObj;
 ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj);
 
@@ -31,3 +37,4 @@ struct SATResult
 };
 
 SATResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhedron &b);
+SATResult checkCollision(const ColliderPolyhedron &a, const ColliderSphere &b);
