@@ -56,7 +56,7 @@ mat4 cameraUpdateFreeCam(Camera* camera, KeyState keys[], float dt)
     camera->pitch = CLAMP_BETWEEN(camera->pitch, -degreesToRadians(85), degreesToRadians(85));
 
     mat4 viewMat = translationMat(-camera->pos) * rotateYMat(-camera->yaw) * rotateXMat(-camera->pitch);
-    camera->fwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
+    camera->fwd = {-viewMat.m[2][0], -viewMat.m[2][1], -viewMat.m[2][2]};
 
     return viewMat;
 }
