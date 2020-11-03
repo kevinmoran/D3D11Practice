@@ -32,6 +32,10 @@ union vec4
     vec3 xyz;
 };
 
+vec4 v4(vec3 xyz, float w) {
+    return vec4{ xyz.x, xyz.y, xyz.z, w };
+}
+
 union mat4
 {
     float m[4][4];
@@ -62,6 +66,10 @@ inline float length(vec3 v) {
     return sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
 }
 
+inline float lengthSquared(vec3 v) {
+    return (v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
 inline float dot(vec3 a, vec3 b) {
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
@@ -78,8 +86,12 @@ inline vec3 operator/ (float f, vec3 v) {
     return {f/v.x, f/v.y, f/v.z};
 }
 
+inline vec3 operator/ (vec3 v, float f) {
+    return v * (1.f / f);
+}
+
 inline vec3 normalise(vec3 v) {
-    return v * (1.f / length(v));
+    return v / length(v);
 }
 
 inline vec3 normaliseOrZero(vec3 v) {

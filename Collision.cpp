@@ -13,13 +13,11 @@ ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj)
 
     vec4* destVertex = result.vertices;
     for(u32 i=0; i<obj.numVertices; ++i) {
-        *destVertex++ = {
-            obj.vertexBuffer[i].pos.x,
-            obj.vertexBuffer[i].pos.y,
-            obj.vertexBuffer[i].pos.z, 
-            1.f};
+        *destVertex++ = v4(obj.vertexBuffer[i].pos, 1.f);
     }
 
+    // Note: We will have redundant planes here since we're adding one for each triangle rather than each face
+    // This will be fixed when we actually generate collision data offline
     result.numPlanes = obj.numIndices / 3;
     result.planes = (Plane*)malloc(result.numPlanes * sizeof(Plane));
 
@@ -28,11 +26,27 @@ ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj)
         vec3 a = obj.vertexBuffer[obj.indexBuffer[i]].pos;
         vec3 b = obj.vertexBuffer[obj.indexBuffer[i+1]].pos;
         vec3 c = obj.vertexBuffer[obj.indexBuffer[i+2]].pos;
-        vec3 n = cross(b-a, c-a);
+        vec3 n = normalise(cross(b-a, c-a));
 
-        destPlane->point = {a.x, a.y, a.z, 1.f};
+        destPlane->point = v4(a, 1.f);
         destPlane->normal = n;
         ++destPlane;
+    }
+
+    // NOTE: We will have duplicate edges here. Just doing the simplest thing for now.
+    // This will be fixed when we actually generate collision data offline
+    result.numEdges = obj.numIndices;
+    result.edges = (Edge*)malloc(result.numEdges * sizeof(Edge));
+
+    Edge* destEdge = result.edges;
+    for(u32 i=0; i<obj.numIndices; i+=3) {
+        vec3 a = obj.vertexBuffer[obj.indexBuffer[i]].pos;
+        vec3 b = obj.vertexBuffer[obj.indexBuffer[i+1]].pos;
+        vec3 c = obj.vertexBuffer[obj.indexBuffer[i+2]].pos;
+        
+        *destEdge++ = {a, b};
+        *destEdge++ = {b, c};
+        *destEdge++ = {c, a};
     }
 
     return result;
@@ -93,6 +107,16 @@ SATResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhedron &
         return resultB;
 }
 
+// Returns closest point to p that lies on line segment ab.
+// From Real-Time Collision Detection
+vec3 findClosestPointOnLineSegment(vec3 p, vec3 a, vec3 b)
+{
+    vec3 ab = b-a;
+    float t = dot(p-a, ab) / dot(ab,ab);
+    t = CLAMP_BETWEEN(t, 0, 1);
+    return a + ab*t;
+}
+
 SATResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &sphere)
 {
     SATResult result = {
@@ -115,11 +139,43 @@ SATResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &s
         // so we can resolve the collision
         if(currentPenetrationDistance < result.penetrationDistance) {
             result.penetrationDistance = currentPenetrationDistance;
-            result.normal = plane.normal;
+            result.normal = -plane.normal;
         }
     }
-    // TODO: There are still some false positives with this test
-    // Try finding the closest edge to the sphere and use that vector
-    // as a separating axis
+
+    // Did not find separating axis using polyhedron's faces. Find closest edge and test 
+    // the vector from that to the sphere center as a possible separating axis
+    float minDistanceSquaredToEdge = 1E37;
+    vec3 overallClosestEdgePoint = {};
+    { // Find closest edge point on polyhedron to sphere center
+        for(u32 i=0; i<poly.numEdges; ++i)
+        {
+            Edge edge = {
+                (v4(poly.edges[i].p0, 1) * poly.modelMatrix).xyz,
+                (v4(poly.edges[i].p1, 1) * poly.modelMatrix).xyz
+            };
+            
+            vec3 closestPointOnEdge = findClosestPointOnLineSegment(sphere.pos, edge.p0, edge.p1);
+            float distSquared = lengthSquared(closestPointOnEdge - sphere.pos);
+
+            if(distSquared < minDistanceSquaredToEdge) {
+                minDistanceSquaredToEdge = distSquared;
+                overallClosestEdgePoint = closestPointOnEdge;
+            }
+        }
+    }
+
+    // Find how far behind closest edge sphere is
+    vec3 closestEdgeToSphereDir = (sphere.pos - overallClosestEdgePoint) / sqrtf(minDistanceSquaredToEdge);
+    vec3 furthestPointOnSphere = sphere.pos - closestEdgeToSphereDir * sphere.radius ;
+
+    float penetrationDistance = dot(overallClosestEdgePoint - furthestPointOnSphere, closestEdgeToSphereDir);
+    if(penetrationDistance < 0) { // Sphere is in front of closest edge;
+        // We have found a separating axis
+        result.isColliding = false;
+    }
+    // Note: Don't think we need to check this edge penetration distance against the minimum penetration found
+    // using the polyhedron's face normals as separating axes, because of Pythagoras' theorem?
+
     return result;
 }

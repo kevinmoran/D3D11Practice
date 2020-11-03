@@ -457,7 +457,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             SATResult result = checkCollision(playerColliderData, sphereColliders[i]);
             if(result.isColliding){
                 sphereTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
-                // player.pos += result.normal * result.penetrationDistance;
+                player.pos += result.normal * result.penetrationDistance;
             }
             else 
             {

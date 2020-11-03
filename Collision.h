@@ -9,12 +9,20 @@ struct Plane
     vec3 normal;
 };
 
+struct Edge
+{
+    vec3 p0;
+    vec3 p1;
+};
+
 struct ColliderPolyhedron
 {
     u32 numVertices;
     vec4* vertices;
     u32 numPlanes;
     Plane* planes;
+    u32 numEdges;
+    Edge* edges;
 
     mat4 modelMatrix;
     mat3 normalMatrix;
