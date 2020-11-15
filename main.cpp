@@ -235,18 +235,17 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
 
     LoadedObj cubeObj = loadObj("cube.obj");
     LoadedObj sphereObj = loadObj("sphere.obj");
+    LoadedObj cylinderObj = loadObj("cylinder.obj");
 
     Mesh cubeMesh = d3d11CreateMesh(d3d11Data.device, cubeObj);
-    
-    Mesh playerMesh = d3d11CreateMesh(d3d11Data.device, cubeObj);
-    
+    Mesh playerMesh = d3d11CreateMesh(d3d11Data.device, cylinderObj);
     Mesh sphereMesh = d3d11CreateMesh(d3d11Data.device, sphereObj);
     
-    freeLoadedObj(sphereObj);
-
     ColliderPolyhedron cubeColliderData = createColliderPolyhedron(cubeObj);
     
     freeLoadedObj(cubeObj);
+    freeLoadedObj(sphereObj);
+    freeLoadedObj(cylinderObj);
 
     Texture cubeTexture = d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "test.png");
 
@@ -311,7 +310,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     wndProcData.windowDidResize = true; // To force initial perspectiveMat calculation
 
     Player player = playerInit({0,0,0}, normalise({0,0,1}));
-    ColliderPolyhedron playerColliderData = cubeColliderData;
 
     const int NUM_CUBES = 5;
     vec3 cubePositions[NUM_CUBES] = {
@@ -326,7 +324,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         {1,2,5},
         {3,1,8},
         {5,2,4},
-        {20,0.5,20},
+        {20,1,20},
     };
 
     mat4 cubeModelMats[NUM_CUBES];
@@ -435,8 +433,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier);
         }
         
-        playerColliderData.modelMatrix = playerModelMat;
-        playerColliderData.normalMatrix = calculateNormalMatrix(player);
+        ColliderCylinder playerColliderData = {
+            player.pos,
+            vec3{0,1,0},
+            playerScale.y,
+            playerScale.x
+        };
 
         vec4 cubeTintColours[NUM_CUBES] = {};
         vec4 sphereTintColours[NUM_SPHERES] = {};
@@ -452,18 +454,18 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
                 cubeTintColours[i] = {1,1,1,1};
             }
         }
-        for(u32 i=0; i<NUM_SPHERES; ++i)
-        {
-            SATResult result = checkCollision(playerColliderData, sphereColliders[i]);
-            if(result.isColliding){
-                sphereTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
-                player.pos += result.normal * result.penetrationDistance;
-            }
-            else 
-            {
-                sphereTintColours[i] = {1,1,0,1};
-            }
-        }
+        // for(u32 i=0; i<NUM_SPHERES; ++i)
+        // {
+        //     SATResult result = checkCollision(playerColliderData, sphereColliders[i]);
+        //     if(result.isColliding){
+        //         sphereTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
+        //         player.pos += result.normal * result.penetrationDistance;
+        //     }
+        //     else 
+        //     {
+        //         sphereTintColours[i] = {1,1,0,1};
+        //     }
+        // }
         playerModelMat = calculateModelMatrix(player);
 
         mat4 viewMat;
