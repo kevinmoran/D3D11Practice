@@ -445,8 +445,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         // Collision Detection
         for(u32 i=0; i<NUM_CUBES; ++i)
         {
-            SATResult result = checkCollision(playerColliderData, cubeColliderDatas[i]);
-            if(result.isColliding){
+            CollisionResult result = checkCollision(playerColliderData, cubeColliderDatas[i]);
+            if(result.isColliding) {
                 cubeTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
                 player.pos += result.normal * result.penetrationDistance;
             }
@@ -456,13 +456,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         }
         // for(u32 i=0; i<NUM_SPHERES; ++i)
         // {
-        //     SATResult result = checkCollision(playerColliderData, sphereColliders[i]);
-        //     if(result.isColliding){
+        //     CollisionResult result = checkCollision(playerColliderData, sphereColliders[i]);
+        //     if(result.isColliding) {
         //         sphereTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
         //         player.pos += result.normal * result.penetrationDistance;
         //     }
-        //     else 
-        //     {
+        //     else {
         //         sphereTintColours[i] = {1,1,0,1};
         //     }
         // }
@@ -557,6 +556,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     rasterizerState->Release();
     perObjectPSConstantBuffer->Release();
     perObjectVSConstantBuffer->Release();
+    whiteTexture.d3dShaderResourceView->Release();
     cubeTexture.d3dShaderResourceView->Release();
     samplerState->Release();
     sphereMesh.indexBuffer->Release();

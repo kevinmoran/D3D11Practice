@@ -47,13 +47,13 @@ struct ColliderCylinder
 struct LoadedObj;
 ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj);
 
-struct SATResult
+struct CollisionResult
 {
     bool isColliding;
     float penetrationDistance;
     vec3 normal;
 };
 
-SATResult checkCollision(const ColliderPolyhedron &polyA, const ColliderPolyhedron &polyB);
-SATResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &sphere);
-SATResult checkCollision(const ColliderCylinder &cylinder, const ColliderPolyhedron &poly);
+CollisionResult checkCollision(const ColliderPolyhedron &polyA, const ColliderPolyhedron &polyB);
+CollisionResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &sphere);
+CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderPolyhedron &poly);

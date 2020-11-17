@@ -57,9 +57,9 @@ ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj)
 }
 
 // Check if any of the plane normals of `b` are a separating axis for the vertices of `a`
-static SATResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderPolyhedron &b)
+static CollisionResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderPolyhedron &b)
 {
-    SATResult result = {
+    CollisionResult result = {
         true, 1E+37, {}
     };
     for(u32 i=0; i<b.numPlanes; ++i)
@@ -96,12 +96,12 @@ static SATResult separatingAxisTest(const ColliderPolyhedron &a, const ColliderP
     return result;
 }
 
-SATResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhedron &b)
+CollisionResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhedron &b)
 {
-    SATResult resultA = separatingAxisTest(a, b);
+    CollisionResult resultA = separatingAxisTest(a, b);
     if(!resultA.isColliding)
         return resultA;
-    SATResult resultB = separatingAxisTest(b, a);
+    CollisionResult resultB = separatingAxisTest(b, a);
     if(!resultB.isColliding)
         return resultB;
 
@@ -121,9 +121,9 @@ static vec3 findClosestPointOnLineSegment(vec3 p, vec3 a, vec3 b)
     return a + ab*t;
 }
 
-SATResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &sphere)
+CollisionResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &sphere)
 {
-    SATResult result = {
+    CollisionResult result = {
         true, 1E+37, {}
     };
     for(u32 i=0; i<poly.numPlanes; ++i)
@@ -276,9 +276,9 @@ static void findClosestPointsOnLineSegments(vec3 p1, vec3 q1, vec3 p2, vec3 q2, 
     // return dot(c1 - c2, c1 - c2);
 }
 
-SATResult checkCollision(const ColliderCylinder &cylinder, const ColliderPolyhedron &poly)
+CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderPolyhedron &poly)
 {
-    SATResult result = {
+    CollisionResult result = {
         true, 1E+37, {}
     };
 
