@@ -13,7 +13,7 @@ struct Player {
 };
 
 Player playerInit(vec3 pos, vec3 fwd);
-mat4 playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt);
+void playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt);
 
 const vec3 playerScale = {0.5,1,0.5};
 

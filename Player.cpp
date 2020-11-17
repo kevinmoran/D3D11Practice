@@ -9,7 +9,7 @@ Player playerInit(vec3 pos, vec3 fwd)
     return result;
 }
 
-mat4 playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
+void playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
 {
     vec3 camFwdXZ = normalise({cameraFwd.x, 0, cameraFwd.z});
     vec3 camRightXZ = normalise(cross(camFwdXZ, {0, 1, 0}));
@@ -74,5 +74,4 @@ mat4 playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
 
     mat4 modelMatrix = calculateModelMatrix(*player);
     player->fwd = normalise({modelMatrix.m[0][2], modelMatrix.m[1][2], modelMatrix.m[2][2]});
-    return modelMatrix;
 }

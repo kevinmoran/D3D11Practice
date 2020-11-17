@@ -426,11 +426,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             timeStepMultiplier = CLAMP_BELOW(timeStepMultiplier*2.f, 2.f);
 
         mat4 playerModelMat;
-        if(freeCam) {
-            playerModelMat = calculateModelMatrix(player);
-        }
-        else {
-            playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier);
+        if(!freeCam) {
+            playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier);
         }
         
         ColliderCapsule playerColliderData = {
