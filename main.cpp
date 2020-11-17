@@ -433,7 +433,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             playerModelMat = playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier);
         }
         
-        ColliderCylinder playerColliderData = {
+        ColliderCapsule playerColliderData = {
             player.pos,
             player.pos + vec3{0,playerScale.y,0},
             playerScale.x

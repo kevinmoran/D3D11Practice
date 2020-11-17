@@ -42,6 +42,13 @@ struct ColliderCylinder
     float radius;
 };
 
+struct ColliderCapsule
+{
+    vec3 p0; // center of "lower" sphere
+    vec3 p1; // center of "upper" sphere
+    float radius;
+};
+
 struct LoadedObj;
 ColliderPolyhedron createColliderPolyhedron(const LoadedObj &obj);
 
@@ -54,4 +61,13 @@ struct CollisionResult
 
 CollisionResult checkCollision(const ColliderPolyhedron &polyA, const ColliderPolyhedron &polyB);
 CollisionResult checkCollision(const ColliderPolyhedron &poly, const ColliderSphere &sphere);
+
 CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderPolyhedron &poly);
+// CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderSphere &sphere); // TODO
+// CollisionResult checkCollision(const ColliderCylinder &cylinderA, const ColliderCylinder &cylinderB); // TODO
+// CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderCapsule &capsule); // TODO
+
+CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderPolyhedron &poly);
+// CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderSphere &sphere); // TODO
+// CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderCylinder &cylinder); // TODO
+// CollisionResult checkCollision(const ColliderCapsule &capsuleA, const ColliderCapsule &capsuleB); // TODO

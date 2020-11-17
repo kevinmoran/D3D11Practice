@@ -184,9 +184,10 @@ CollisionResult checkCollision(const ColliderPolyhedron &poly, const ColliderSph
     return result;
 }
 
-// Find furthest point on cylinder in a given direction
+// Find furthest point on cylinder in a given (normalised) direction
 static vec3 getFurthestPointInDir(const ColliderCylinder& cylinder, vec3 dir)
 { 
+    assert(areAlmostEqual(lengthSquared(dir), 1.f));
     // First find which of the cylinder's endpoints is furthest
     vec3 furthestEndpoint = 
         (dot(cylinder.p0, dir) > dot(cylinder.p1, dir)) 
@@ -292,7 +293,6 @@ CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderP
         
         vec3 furthestPointOnCylinder = getFurthestPointInDir(cylinder, -plane.normal);
         
-
         float currentPenetrationDistance = dot(plane.point.xyz - furthestPointOnCylinder, plane.normal);
         if(currentPenetrationDistance < 0) {
             result.isColliding = false;
@@ -342,6 +342,91 @@ CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderP
     
     float penetrationDistance = dot(overallClosestEdgePoint - furthestPointOnCylinder, closestEdgeNormal);
     if(penetrationDistance < 0) { // Cylinder is in front of closest edge;
+        // We have found a separating axis
+        result.isColliding = false;
+    }
+    // Note: Don't think we need to check this edge penetration distance against the minimum penetration found
+    // using the polyhedron's face normals as separating axes, because of Pythagoras' theorem?
+
+    return result;
+}
+
+// Find furthest point on capsule in a given (normalised) direction
+static vec3 getFurthestPointInDir(const ColliderCapsule& capsule, vec3 dir)
+{
+    assert(areAlmostEqual(lengthSquared(dir), 1.f));
+    // First find which of the cylinder's endpoints is furthest
+    vec3 furthestEndpoint = 
+        (dot(capsule.p0, dir) > dot(capsule.p1, dir)) 
+        ? capsule.p0 : capsule.p1;
+
+    return furthestEndpoint + dir * capsule.radius;
+}
+
+CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderPolyhedron &poly)
+{
+    CollisionResult result = {
+        true, 1E+37, {}
+    };
+
+    for(u32 i=0; i<poly.numPlanes; ++i)
+    {
+        Plane plane = {
+            poly.planes[i].point * poly.modelMatrix,
+            normalise(poly.planes[i].normal * poly.normalMatrix)
+        };
+        
+        vec3 furthestPointOnCapsule = getFurthestPointInDir(capsule, -plane.normal);
+        
+        float currentPenetrationDistance = dot(plane.point.xyz - furthestPointOnCapsule, plane.normal);
+        if(currentPenetrationDistance < 0) {
+            result.isColliding = false;
+            return result;
+        }
+        
+        // Keep track of which plane gives the smallest penetration 
+        // so we can resolve the collision
+        if(currentPenetrationDistance < result.penetrationDistance) {
+            result.penetrationDistance = currentPenetrationDistance;
+            result.normal = plane.normal;
+        }
+    }
+
+    // Did not find separating axis using polyhedron's faces. Find closest edge and test 
+    // the vector from that to the capsule's central line segment as a possible separating axis
+    float minDistanceSquaredToEdge = 1E37;
+    vec3 overallClosestEdgePoint = {};
+    { // Find closest edge point on polyhedron to sphere center
+        for(u32 i=0; i<poly.numEdges; ++i)
+        {
+            Edge edge = {
+                (v4(poly.edges[i].p0, 1) * poly.modelMatrix).xyz,
+                (v4(poly.edges[i].p1, 1) * poly.modelMatrix).xyz
+            };
+            
+            vec3 closestPointOnCapsule, closestPointOnEdge;
+            findClosestPointsOnLineSegments(
+                capsule.p0, capsule.p1, 
+                edge.p0, edge.p1, 
+                closestPointOnCapsule, closestPointOnEdge
+            );
+            float distSquared = lengthSquared(closestPointOnCapsule - closestPointOnEdge);
+
+            if(distSquared < minDistanceSquaredToEdge) {
+                minDistanceSquaredToEdge = distSquared;
+                overallClosestEdgePoint = closestPointOnEdge;
+            }
+        }
+    }
+
+    // Find how far behind closest edge capsule is
+    // Use the vector from the polyhedron's centroid to the closest edge as its "normal"
+    vec3 transformedCentroid = (v4(poly.centroid, 1.0) * poly.modelMatrix).xyz;
+    vec3 closestEdgeNormal = normalise(overallClosestEdgePoint - transformedCentroid);
+    vec3 furthestPointOnCapsule = getFurthestPointInDir(capsule, -closestEdgeNormal);
+    
+    float penetrationDistance = dot(overallClosestEdgePoint - furthestPointOnCapsule, closestEdgeNormal);
+    if(penetrationDistance < 0) { // Capsule is in front of closest edge;
         // We have found a separating axis
         result.isColliding = false;
     }
