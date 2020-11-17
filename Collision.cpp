@@ -189,11 +189,12 @@ static vec3 getFurthestPointInDir(const ColliderCylinder& cylinder, vec3 dir)
 { 
     // First find which of the cylinder's endpoints is furthest
     vec3 furthestEndpoint = 
-        (dot(cylinder.base, dir) > dot(cylinder.top(), dir)) 
-        ? cylinder.base : cylinder.top();
+        (dot(cylinder.p0, dir) > dot(cylinder.p1, dir)) 
+        ? cylinder.p0 : cylinder.p1;
 
     // Project plane normal onto plane of cylinder end cap
-    vec3 projection = dir - (cylinder.upDir * dot(dir, cylinder.upDir));
+    vec3 cylinderUpDir = normalise(cylinder.p1 - cylinder.p0);
+    vec3 projection = dir - (cylinderUpDir * dot(dir, cylinderUpDir));
     return furthestEndpoint + (normaliseOrZero(projection) * cylinder.radius);
 }
 
@@ -320,7 +321,7 @@ CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderP
             
             vec3 closestPointOnCylinder, closestPointOnEdge;
             findClosestPointsOnLineSegments(
-                cylinder.base, cylinder.top(), 
+                cylinder.p0, cylinder.p1, 
                 edge.p0, edge.p1, 
                 closestPointOnCylinder, closestPointOnEdge
             );

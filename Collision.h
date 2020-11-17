@@ -37,11 +37,9 @@ struct ColliderSphere
 
 struct ColliderCylinder
 {
-    vec3 base;
-    vec3 upDir; // normalised
-    float height;
+    vec3 p0;
+    vec3 p1;
     float radius;
-    inline vec3 top() const { return base + upDir*height; }
 };
 
 struct LoadedObj;

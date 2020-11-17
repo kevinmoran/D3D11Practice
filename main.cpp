@@ -435,8 +435,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         
         ColliderCylinder playerColliderData = {
             player.pos,
-            vec3{0,1,0},
-            playerScale.y,
+            player.pos + vec3{0,playerScale.y,0},
             playerScale.x
         };
 
