@@ -116,7 +116,7 @@ CollisionResult checkCollision(const ColliderPolyhedron &a, const ColliderPolyhe
 static vec3 findClosestPointOnLineSegment(vec3 p, vec3 a, vec3 b)
 {
     vec3 ab = b-a;
-    float t = dot(p-a, ab) / dot(ab,ab);
+    float t = dot(p-a, ab) / lengthSquared(ab);
     t = CLAMP_BETWEEN(t, 0, 1);
     return a + ab*t;
 }
@@ -199,16 +199,15 @@ static vec3 getFurthestPointInDir(const ColliderCylinder& cylinder, vec3 dir)
     return furthestEndpoint + (normaliseOrZero(projection) * cylinder.radius);
 }
 
-// Computes closest points c1 and c2
-// on line segments {p1,q1} and {p2,q2}, respectively
+// Computes closest points c1 and c2 on line segments {p1,q1} and {p2,q2}, respectively
 // From Real-Time Collision Detection
 static void findClosestPointsOnLineSegments(vec3 p1, vec3 q1, vec3 p2, vec3 q2, vec3 &c1, vec3 &c2)
 {
     vec3 d1 = q1 - p1; // Direction vector of segment S1
     vec3 d2 = q2 - p2; // Direction vector of segment S2
     vec3 r = p1 - p2;
-    float a = dot(d1, d1); // Squared length of segment S1, always nonnegative
-    float e = dot(d2, d2); // Squared length of segment S2, always nonnegative
+    float a = lengthSquared(d1); // always nonnegative
+    float e = lengthSquared(d2); // always nonnegative
     float f = dot(d2, r);
 
     // s and t are the factors we're looking for that satisfy the equations:
@@ -232,7 +231,7 @@ static void findClosestPointsOnLineSegments(vec3 p1, vec3 q1, vec3 p2, vec3 q2, 
     //     }
     //     else {
     //         s = 0.0f;
-    //         t = f / e; // s = 0 => t = (b*s + f) / e = f / e
+    //         t = f/e; // s = 0 => t = (b*s + f)/e == f/e
     //         t = CLAMP_BETWEEN(t, 0.0f, 1.0f);
     //     }
     // } 
@@ -242,40 +241,38 @@ static void findClosestPointsOnLineSegments(vec3 p1, vec3 q1, vec3 p2, vec3 q2, 
         // if (e <= EPSILON) {
         //     // Second segment degenerates into a point
         //     t = 0.0f;
-        //     s = CLAMP_BETWEEN(-c / a, 0.0f, 1.0f); // t = 0 => s = (b*t - c) / a = -c / a
+        //     s = CLAMP_BETWEEN(-c/a, 0.0f, 1.0f); // t = 0 => s = (b*t - c)/a == -c/a
         // } 
         // else 
         {
             // The general nondegenerate case starts here
             float b = dot(d1, d2);
-            float denom = a*e-b*b; // Always nonnegative
+            float denom = a*e - b*b; // Always nonnegative
 
             // If segments not parallel, compute closest point on L1 to L2 and
             // clamp to segment S1. Else pick arbitrary s (here 0)
             if (denom > EPSILON)
-                s = CLAMP_BETWEEN((b*f - c*e) / denom, 0.0f, 1.0f);
+                s = CLAMP_BETWEEN((b*f-c*e)/denom, 0.0f, 1.0f);
             else s = 0.0f;
 
             // Compute point on L2 closest to S1(s) using
-            // t = Dot((P1 + D1*s) - P2,D2) / Dot(D2,D2) = (b*s + f) / e
+            // t = dot((P1 + D1*s)-P2, D2) / dot(D2,D2) = (b*s + f)/e
             float tnom = b*s + f;
             if (tnom < 0.0f) {
                 t = 0.0f;
-                s = CLAMP_BETWEEN(-c / a, 0.0f, 1.0f);
+                s = CLAMP_BETWEEN(-c/a, 0.0f, 1.0f);
             } 
             else if (tnom > e) {
                 t = 1.0f;
-                s = CLAMP_BETWEEN((b - c) / a, 0.0f, 1.0f);
+                s = CLAMP_BETWEEN((b-c)/a, 0.0f, 1.0f);
             } 
             else {
-                t = tnom / e;
+                t = tnom/e;
             }
         }
     }
     c1 = p1 + d1 * s;
     c2 = p2 + d2 * t;
-
-    // return dot(c1 - c2, c1 - c2);
 }
 
 CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderPolyhedron &poly)

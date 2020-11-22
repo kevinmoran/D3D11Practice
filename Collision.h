@@ -44,8 +44,8 @@ struct ColliderCylinder
 
 struct ColliderCapsule
 {
-    vec3 p0; // center of "lower" sphere
-    vec3 p1; // center of "upper" sphere
+    vec3 p0;
+    vec3 p1;
     float radius;
 };
 
