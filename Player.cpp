@@ -72,6 +72,5 @@ void playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt)
         player->isOnGround = true;
     }
 
-    mat4 modelMatrix = calculateModelMatrix(*player);
-    player->fwd = normalise({modelMatrix.m[0][2], modelMatrix.m[1][2], modelMatrix.m[2][2]});
+    player->fwd = {sinf(player->yRotation), 0, cosf(player->yRotation)};
 }
