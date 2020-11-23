@@ -15,12 +15,3 @@ struct Player {
 Player playerInit(vec3 pos, vec3 fwd);
 void playerUpdate(Player* player, KeyState keys[], vec3 cameraFwd, float dt);
 
-const vec3 playerScale = {0.5,1,0.5};
-
-inline mat4 calculateModelMatrix(Player player) {
-    return scaleMat(playerScale) * rotateYMat(player.yRotation) * translationMat(player.pos);
-}
-
-inline mat3 calculateNormalMatrix(Player player) {
-    return transpose(rotateYMat3(-player.yRotation) * scaleMat3(1/playerScale));
-}

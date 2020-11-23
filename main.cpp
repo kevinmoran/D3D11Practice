@@ -238,8 +238,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     LoadedObj cylinderObj = loadObj("cylinder.obj");
 
     Mesh cubeMesh = d3d11CreateMesh(d3d11Data.device, cubeObj);
-    Mesh playerMesh = d3d11CreateMesh(d3d11Data.device, cylinderObj);
     Mesh sphereMesh = d3d11CreateMesh(d3d11Data.device, sphereObj);
+    Mesh cylinderMesh = d3d11CreateMesh(d3d11Data.device, cylinderObj);
     
     ColliderPolyhedron cubeColliderData = createColliderPolyhedron(cubeObj);
     
@@ -425,15 +425,19 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         if(wndProcData.keys[KEY_PLUS].wentDown())
             timeStepMultiplier = CLAMP_BELOW(timeStepMultiplier*2.f, 2.f);
 
-        mat4 playerModelMat;
         if(!freeCam) {
             playerUpdate(&player, wndProcData.keys, camera.fwd, dt*timeStepMultiplier);
         }
         
+        const float playerRadius = 0.3f;
+        const float playerHeight = 1.f;
+        assert(playerHeight > 2.f*playerRadius);
+        const float playerCapsuleRadius = playerRadius;
+        const float playerCapsuleLineSegmentLength = playerHeight - 2.f*playerRadius;
         ColliderCapsule playerColliderData = {
-            player.pos,
-            player.pos + vec3{0,playerScale.y,0},
-            playerScale.x
+            player.pos + vec3{0, playerCapsuleRadius, 0},
+            player.pos + vec3{0, playerCapsuleRadius + playerCapsuleLineSegmentLength, 0},
+            playerCapsuleRadius
         };
 
         vec4 cubeTintColours[NUM_CUBES] = {};
@@ -461,7 +465,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         //         sphereTintColours[i] = {1,1,0,1};
         //     }
         // }
-        playerModelMat = calculateModelMatrix(player);
 
         mat4 viewMat;
         if(freeCam) {
@@ -498,17 +501,43 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
         d3d11Data.deviceContext->PSSetShaderResources(0, 1, &cubeTexture.d3dShaderResourceView);
         d3d11Data.deviceContext->PSSetSamplers(0, 1, &samplerState);
 
-        { // Draw player
-            d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &playerMesh.vertexBuffer, &playerMesh.stride, &playerMesh.offset);
-            d3d11Data.deviceContext->IASetIndexBuffer(playerMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-            PerObjectVSConstants vsConstants = { playerModelMat * viewPerspectiveMat };
-            d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
+        { // Draw player capsule collider (just draw 2 spheres and a cylinder between them)
 
             PerObjectPSConstants psConstants = { {0.8f, 0.1f, 0.3f, 1.0f} };
             d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectPSConstantBuffer, &psConstants, sizeof(PerObjectPSConstants));
+            
+            { // Draw cylinder
+                d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &cylinderMesh.vertexBuffer, &cylinderMesh.stride, &cylinderMesh.offset);
+                d3d11Data.deviceContext->IASetIndexBuffer(cylinderMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+                
+                mat4 modelMat = scaleMat({playerCapsuleRadius,playerCapsuleLineSegmentLength,playerCapsuleRadius})
+                * translationMat(player.pos + vec3{0,playerCapsuleRadius,0});
+                PerObjectVSConstants vsConstants = { modelMat * viewPerspectiveMat };
+                d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
 
-            d3d11Data.deviceContext->DrawIndexed(playerMesh.numIndices, 0, 0);
+                d3d11Data.deviceContext->DrawIndexed(cylinderMesh.numIndices, 0, 0);
+            }
+            
+            d3d11Data.deviceContext->IASetVertexBuffers(0, 1, &sphereMesh.vertexBuffer, &sphereMesh.stride, &sphereMesh.offset);
+            d3d11Data.deviceContext->IASetIndexBuffer(sphereMesh.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+            
+            { // Draw sphere 1
+                mat4 modelMat = scaleMat(playerCapsuleRadius)
+                * translationMat(player.pos + vec3{0,playerCapsuleRadius,0});
+                PerObjectVSConstants vsConstants = { modelMat * viewPerspectiveMat };
+                d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
+
+                d3d11Data.deviceContext->DrawIndexed(sphereMesh.numIndices, 0, 0);
+            }
+            
+            { // Draw sphere 2
+                mat4 modelMat = scaleMat(playerCapsuleRadius)
+                * translationMat(player.pos + vec3{0,playerCapsuleRadius+playerCapsuleLineSegmentLength,0});
+                PerObjectVSConstants vsConstants = { modelMat * viewPerspectiveMat };
+                d3d11OverwriteConstantBuffer(d3d11Data.deviceContext, perObjectVSConstantBuffer, &vsConstants, sizeof(PerObjectVSConstants));
+
+                d3d11Data.deviceContext->DrawIndexed(sphereMesh.numIndices, 0, 0);
+            }
         }
 
         { // Draw cubes
@@ -555,12 +584,12 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     whiteTexture.d3dShaderResourceView->Release();
     cubeTexture.d3dShaderResourceView->Release();
     samplerState->Release();
+    cylinderMesh.indexBuffer->Release();
+    cylinderMesh.vertexBuffer->Release();
     sphereMesh.indexBuffer->Release();
     sphereMesh.vertexBuffer->Release();
     cubeMesh.indexBuffer->Release();
     cubeMesh.vertexBuffer->Release();
-    playerMesh.indexBuffer->Release();
-    playerMesh.vertexBuffer->Release();
     pixelShader->Release();
     inputLayout->Release();
     vertexShader->Release();
