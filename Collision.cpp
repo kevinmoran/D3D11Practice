@@ -432,3 +432,19 @@ CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderPol
 
     return result;
 }
+
+CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderSphere &sphere)
+{
+    CollisionResult result = { false };
+    
+    vec3 closestPointOnSegment = findClosestPointOnLineSegment(sphere.pos, capsule.p0, capsule.p1);
+    vec3 sphereToCylinderVec = closestPointOnSegment - sphere.pos;
+    float sphereToCylinderDist = length(sphereToCylinderVec);
+
+    float penetrationDist = sphere.radius + capsule.radius - sphereToCylinderDist;
+    if(penetrationDist > 0) {
+        result = {true, penetrationDist, sphereToCylinderVec/sphereToCylinderDist};
+    }
+
+    return result;
+}

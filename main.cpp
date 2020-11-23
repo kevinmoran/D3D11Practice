@@ -454,17 +454,17 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
                 cubeTintColours[i] = {1,1,1,1};
             }
         }
-        // for(u32 i=0; i<NUM_SPHERES; ++i)
-        // {
-        //     CollisionResult result = checkCollision(playerColliderData, sphereColliders[i]);
-        //     if(result.isColliding) {
-        //         sphereTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
-        //         player.pos += result.normal * result.penetrationDistance;
-        //     }
-        //     else {
-        //         sphereTintColours[i] = {1,1,0,1};
-        //     }
-        // }
+        for(u32 i=0; i<NUM_SPHERES; ++i)
+        {
+            CollisionResult result = checkCollision(playerColliderData, sphereColliders[i]);
+            if(result.isColliding) {
+                sphereTintColours[i] = {0.1f, 0.8f, 0.2f, 1.f};
+                player.pos += result.normal * result.penetrationDistance;
+            }
+            else {
+                sphereTintColours[i] = {1,1,0,1};
+            }
+        }
 
         mat4 viewMat;
         if(freeCam) {

@@ -68,6 +68,6 @@ CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderP
 // CollisionResult checkCollision(const ColliderCylinder &cylinder, const ColliderCapsule &capsule); // TODO
 
 CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderPolyhedron &poly);
-// CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderSphere &sphere); // TODO
+CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderSphere &sphere);
 // CollisionResult checkCollision(const ColliderCapsule &capsule, const ColliderCylinder &cylinder); // TODO
 // CollisionResult checkCollision(const ColliderCapsule &capsuleA, const ColliderCapsule &capsuleB); // TODO
