@@ -32,7 +32,7 @@ union vec4
     vec3 xyz;
 };
 
-vec4 v4(vec3 xyz, float w) {
+inline vec4 v4(vec3 xyz, float w) {
     return vec4{ xyz.x, xyz.y, xyz.z, w };
 }
 
