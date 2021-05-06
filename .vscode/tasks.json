@@ -14,6 +14,16 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        
+        {
+            "label": "build-release",
+            "type": "shell",
+            "command": "./build.bat",
+            "args":["-release"],
+            "problemMatcher": [
+                "$msCompile"
+            ]
         }
     ]
 }
