@@ -233,9 +233,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     // Create Pixel Shader
     ID3D11PixelShader* pixelShader = d3d11CreatePixelShader(d3d11Data.device, L"shaders.hlsl", "ps_main");
 
-    LoadedObj cubeObj = loadObj("cube.obj");
-    LoadedObj sphereObj = loadObj("sphere.obj");
-    LoadedObj cylinderObj = loadObj("cylinder.obj");
+    LoadedObj cubeObj = loadObj("data/cube.obj");
+    LoadedObj sphereObj = loadObj("data/sphere.obj");
+    LoadedObj cylinderObj = loadObj("data/cylinder.obj");
 
     Mesh cubeMesh = d3d11CreateMesh(d3d11Data.device, cubeObj);
     Mesh sphereMesh = d3d11CreateMesh(d3d11Data.device, sphereObj);
@@ -247,7 +247,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
     freeLoadedObj(sphereObj);
     freeLoadedObj(cylinderObj);
 
-    Texture cubeTexture = d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "test.png");
+    Texture cubeTexture = d3d11CreateTexture(d3d11Data.device, d3d11Data.deviceContext, "data/test.png");
 
     Texture whiteTexture;
     {
