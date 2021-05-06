@@ -407,8 +407,11 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /
             d3d11Data.msaaRenderTargetView->Release();
             d3d11Data.depthStencilView->Release();
 
-            HRESULT res = d3d11Data.swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
-            assert(SUCCEEDED(res));
+            HRESULT hr = d3d11Data.swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+            if(FAILED(hr)) {
+                assert(!(bool)"ResizeBuffers failed after window resize");
+                return -1;
+            }
             
             d3d11InitRenderTargetsAndDepthBuffer(&d3d11Data);
             perspectiveMat = makePerspectiveMat(windowAspectRatio, degreesToRadians(100), 0.1f, 1000.f);

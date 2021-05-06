@@ -94,7 +94,10 @@ int d3d11Init(HWND hWindow, D3D11Data* d3d11)
         d3d11SwapChainDesc.Flags = 0;
 
         HRESULT hResult = dxgiFactory->CreateSwapChainForHwnd(d3d11->device, hWindow, &d3d11SwapChainDesc, 0, 0, &d3d11->swapChain);
-        assert(SUCCEEDED(hResult));
+        if(FAILED(hResult)) {
+            assert(!(bool)"Fatal error, could not create swap chain");
+            return -1;
+        }
 
         dxgiFactory->Release();
     }
@@ -216,7 +219,9 @@ ID3D11PixelShader* d3d11CreatePixelShader(ID3D11Device1* device, LPCWSTR fileNam
     _d3d11CompileShader(fileName, shaderEntryPoint, &shaderByteCode, ShaderType_PIXEL);
 
     HRESULT hResult = device->CreatePixelShader(shaderByteCode->GetBufferPointer(), shaderByteCode->GetBufferSize(), nullptr, &pixelShader);
-    assert(SUCCEEDED(hResult));
+    if(FAILED(hResult)) {
+        assert(!(bool)"CreatePixelShader failed\n");
+    }
     shaderByteCode->Release();
 
     return pixelShader;
@@ -315,7 +320,9 @@ ID3D11Buffer* d3d11CreateConstantBuffer(ID3D11Device1* device, size_t bufferSize
     constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
     HRESULT hResult = device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-    assert(SUCCEEDED(hResult));
+    if((FAILED(hResult))) {
+        assert(!(bool)"Failed to create constant buffer");
+    }
     return constantBuffer;
 }
 
