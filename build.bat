@@ -13,9 +13,6 @@ IF "%~1"=="-release" (
     set BUILD_DIR=build\
 )
 
-set COMPILER_FLAGS=%COMMON_COMPILER_FLAGS% %DEBUG_FLAGS%
-@REM set COMPILER_FLAGS=%COMMON_COMPILER_FLAGS% %RELEASE_FLAGS%
-
 set LINKER_FLAGS=/INCREMENTAL:NO /opt:ref
 set SYSTEM_LIBS=user32.lib gdi32.lib winmm.lib d3d11.lib d3dcompiler.lib
 
