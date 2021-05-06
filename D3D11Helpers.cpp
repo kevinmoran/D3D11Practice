@@ -95,7 +95,7 @@ int d3d11Init(HWND hWindow, D3D11Data* d3d11)
 
         HRESULT hResult = dxgiFactory->CreateSwapChainForHwnd(d3d11->device, hWindow, &d3d11SwapChainDesc, 0, 0, &d3d11->swapChain);
         if(FAILED(hResult)) {
-            assert(!(bool)"Fatal error, could not create swap chain");
+            MessageBoxA(0, "CreateSwapChainForHwnd() failed", "Fatal Error", MB_OK);
             return -1;
         }
 
@@ -149,10 +149,12 @@ bool d3d11InitRenderTargetsAndDepthBuffer(D3D11Data* d3d11)
     depthBufferDesc.SampleDesc.Quality = texDesc.SampleDesc.Quality;
 
     ID3D11Texture2D* depthBuffer;
-    d3d11->device->CreateTexture2D(&depthBufferDesc, nullptr, &depthBuffer);
+    hResult = d3d11->device->CreateTexture2D(&depthBufferDesc, nullptr, &depthBuffer);
+    assert(SUCCEEDED(hResult));
 
     // Create depth stencil view
-    d3d11->device->CreateDepthStencilView(depthBuffer, nullptr, &d3d11->depthStencilView);
+    hResult = d3d11->device->CreateDepthStencilView(depthBuffer, nullptr, &d3d11->depthStencilView);
+    assert(SUCCEEDED(hResult));
 
     depthBuffer->Release();
 

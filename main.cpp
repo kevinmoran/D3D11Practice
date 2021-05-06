@@ -165,7 +165,7 @@ HWND openWindow(LPCWSTR title, int windowWidth, int windowHeight)
     winClass.hIconSm = LoadIconW(0, IDI_APPLICATION);
 
     if(!RegisterClassExW(&winClass)) {
-        MessageBoxA(0, "RegisterClassEx failed", "Fatal Error", MB_OK);
+        MessageBoxA(0, "RegisterClassExW() failed", "Fatal Error", MB_OK);
         return NULL;
     }
 
@@ -174,7 +174,7 @@ HWND openWindow(LPCWSTR title, int windowWidth, int windowHeight)
     LONG initialWidth = initialRect.right - initialRect.left;
     LONG initialHeight = initialRect.bottom - initialRect.top;
 
-    HWND result = CreateWindowExW(WS_EX_OVERLAPPEDWINDOW,
+    HWND hr = CreateWindowExW(WS_EX_OVERLAPPEDWINDOW,
                             winClass.lpszClassName,
                             title,
                             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
@@ -183,10 +183,10 @@ HWND openWindow(LPCWSTR title, int windowWidth, int windowHeight)
                             initialHeight,
                             0, 0, winClass.hInstance, 0);
 
-    if(!result) {
-        MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
+    if(!hr) {
+        MessageBoxA(0, "CreateWindowExW() failed", "Fatal Error", MB_OK);
     }
-    return result;
+    return hr;
 }
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
